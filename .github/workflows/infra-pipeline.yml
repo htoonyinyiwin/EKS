@@ -1,0 +1,79 @@
+name: Infra Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prerequisites/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "prerequisites/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prerequisites
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-southeast-7
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.dev.hcl
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=tfstate-dev.tfvars -out=tfplan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: prerequisites/tfplan
+
+  apply:
+    name: Terraform Apply
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: dev
+    defaults:
+      run:
+        working-directory: prerequisites
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-southeast-7
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.dev.hcl
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: prerequisites
+
+      - name: Terraform Apply
+        run: terraform apply tfplan
