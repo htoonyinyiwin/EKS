@@ -7,12 +7,14 @@ on:
       - "main-infra/**"
       - "main-platform/**"
       - "modules/**"
+      - ".github/workflows/**"
   pull_request:
     branches: [main]
     paths:
       - "main-infra/**"
       - "main-platform/**"
       - "modules/**"
+      - ".github/workflows/**"
   workflow_dispatch:
     inputs:
       run_vpc:
@@ -124,6 +126,7 @@ jobs:
   apply-platform:
     name: Apply - main-platform (EKS)
     needs: plan-platform
+    if: always() && needs.plan-platform.result == 'success'
     runs-on: ubuntu-latest
     environment: dev
     defaults:
