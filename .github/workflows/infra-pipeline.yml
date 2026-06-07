@@ -14,6 +14,11 @@ on:
       - "main-platform/**"
       - "modules/**"
   workflow_dispatch:
+    inputs:
+      run_vpc:
+        description: 'Run main-infra (VPC) jobs — only needed when VPC changes'
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -22,6 +27,7 @@ permissions:
 jobs:
   plan-infra:
     name: Plan - main-infra (VPC)
+    if: ${{ inputs.run_vpc == true }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,6 +59,7 @@ jobs:
   apply-infra:
     name: Apply - main-infra (VPC)
     needs: plan-infra
+    if: ${{ inputs.run_vpc == true }}
     runs-on: ubuntu-latest
     environment: dev
     defaults:
@@ -85,6 +92,7 @@ jobs:
   plan-platform:
     name: Plan - main-platform (EKS)
     needs: apply-infra
+    if: always() && (needs.apply-infra.result == 'success' || needs.apply-infra.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
