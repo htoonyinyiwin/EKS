@@ -61,3 +61,6 @@ terraform.rc
 
 *prerequisites/state/*.tfstate
 
+# Claude Code local memory
+.claude/
+
