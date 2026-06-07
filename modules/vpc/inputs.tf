@@ -34,7 +34,7 @@ variable "public_subnet_tags" {
 }
 
 variable "project_name" {
-  type    = string
+  type = string
 }
 
 variable "count_eip" {

@@ -9,11 +9,11 @@ variable "environment" {
 }
 
 variable "company_name" {
-  type    = string
+  type = string
 }
 
 variable "project_name" {
-  type    = string
+  type = string
 }
 
 variable "region_short" {
