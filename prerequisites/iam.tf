@@ -19,7 +19,7 @@ resource "aws_iam_role" "github_oidc_role" {
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:brianaung95/EKS:*"
+          "token.actions.githubusercontent.com:sub" = "repo:htoonyinyiwin/EKS:*"
         },
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
@@ -34,31 +34,108 @@ resource "aws_iam_role" "github_oidc_role" {
   }
 }
 
-resource "aws_iam_policy" "github_ecr_eks_policy" {
-  name = "GitHub_ECR_EKS_Access"
+resource "aws_iam_policy" "github_terraform_policy" {
+  name = "GitHub_Terraform_EKS_Infra"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
+      # S3 — tfstate read/write
       {
-        Effect = "Allow",
+        Sid    = "TfState"
+        Effect = "Allow"
         Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:CompleteLayerUpload",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:InitiateLayerUpload",
-          "ecr:PutImage",
-          "ecr:UploadLayerPart"
-        ],
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "s3:GetBucketVersioning",
+          "s3:CreateBucket",
+          "s3:PutBucketVersioning",
+          "s3:PutEncryptionConfiguration"
+        ]
+        Resource = [
+          "arn:aws:s3:::proj-tfstate-dev",
+          "arn:aws:s3:::proj-tfstate-dev/*"
+        ]
+      },
+      # EC2 — VPC, subnets, IGW, route tables, security groups
+      {
+        Sid    = "VPC"
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateVpc", "ec2:DeleteVpc", "ec2:DescribeVpcs", "ec2:ModifyVpcAttribute",
+          "ec2:CreateSubnet", "ec2:DeleteSubnet", "ec2:DescribeSubnets", "ec2:ModifySubnetAttribute",
+          "ec2:CreateInternetGateway", "ec2:DeleteInternetGateway", "ec2:AttachInternetGateway", "ec2:DetachInternetGateway", "ec2:DescribeInternetGateways",
+          "ec2:CreateRouteTable", "ec2:DeleteRouteTable", "ec2:DescribeRouteTables",
+          "ec2:CreateRoute", "ec2:DeleteRoute",
+          "ec2:AssociateRouteTable", "ec2:DisassociateRouteTable",
+          "ec2:CreateSecurityGroup", "ec2:DeleteSecurityGroup", "ec2:DescribeSecurityGroups",
+          "ec2:AuthorizeSecurityGroupIngress", "ec2:RevokeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress", "ec2:RevokeSecurityGroupEgress",
+          "ec2:CreateTags", "ec2:DeleteTags", "ec2:DescribeTags",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeLaunchTemplates", "ec2:DescribeLaunchTemplateVersions",
+          "ec2:DescribeVpcAttribute"
+        ]
         Resource = "*"
       },
+      # EKS — cluster + node group lifecycle
       {
-        Effect = "Allow",
+        Sid    = "EKS"
+        Effect = "Allow"
         Action = [
-          "eks:DescribeCluster",
-          "eks:ListClusters"
-        ],
+          "eks:CreateCluster", "eks:DeleteCluster", "eks:DescribeCluster", "eks:ListClusters",
+          "eks:UpdateClusterConfig", "eks:UpdateClusterVersion",
+          "eks:CreateNodegroup", "eks:DeleteNodegroup", "eks:DescribeNodegroup", "eks:ListNodegroups", "eks:UpdateNodegroupConfig", "eks:UpdateNodegroupVersion",
+          "eks:TagResource", "eks:UntagResource", "eks:ListTagsForResource",
+          "eks:CreateAccessEntry", "eks:DeleteAccessEntry", "eks:DescribeAccessEntry", "eks:ListAccessEntries",
+          "eks:AssociateAccessPolicy", "eks:DisassociateAccessPolicy", "eks:ListAssociatedAccessPolicies"
+        ]
+        Resource = "*"
+      },
+      # IAM — roles and policies for EKS cluster and nodes
+      {
+        Sid    = "IAM"
+        Effect = "Allow"
+        Action = [
+          "iam:CreateRole", "iam:DeleteRole", "iam:GetRole", "iam:PassRole",
+          "iam:AttachRolePolicy", "iam:DetachRolePolicy", "iam:ListAttachedRolePolicies",
+          "iam:CreatePolicy", "iam:DeletePolicy", "iam:GetPolicy", "iam:GetPolicyVersion", "iam:ListPolicyVersions",
+          "iam:CreateOpenIDConnectProvider", "iam:DeleteOpenIDConnectProvider", "iam:GetOpenIDConnectProvider", "iam:ListOpenIDConnectProviders",
+          "iam:CreateInstanceProfile", "iam:DeleteInstanceProfile", "iam:GetInstanceProfile",
+          "iam:AddRoleToInstanceProfile", "iam:RemoveRoleFromInstanceProfile",
+          "iam:TagRole", "iam:UntagRole", "iam:ListRoleTags",
+          "iam:ListRolePolicies", "iam:ListInstanceProfilesForRole",
+          "iam:UpdateAssumeRolePolicy"
+        ]
+        Resource = "*"
+      },
+      # ECR — repository management + image push
+      {
+        Sid    = "ECR"
+        Effect = "Allow"
+        Action = [
+          "ecr:CreateRepository", "ecr:DeleteRepository", "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability", "ecr:CompleteLayerUpload",
+          "ecr:GetDownloadUrlForLayer", "ecr:InitiateLayerUpload",
+          "ecr:PutImage", "ecr:UploadLayerPart",
+          "ecr:PutLifecyclePolicy", "ecr:GetLifecyclePolicy",
+          "ecr:TagResource", "ecr:UntagResource", "ecr:ListTagsForResource"
+        ]
+        Resource = "*"
+      },
+      # CloudWatch Logs — EKS control plane logging
+      {
+        Sid    = "Logs"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup", "logs:DeleteLogGroup", "logs:DescribeLogGroups",
+          "logs:PutRetentionPolicy", "logs:TagResource", "logs:ListTagsForResource"
+        ]
         Resource = "*"
       }
     ]
@@ -67,7 +144,7 @@ resource "aws_iam_policy" "github_ecr_eks_policy" {
 
 resource "aws_iam_role_policy_attachment" "github_policy_attach" {
   role       = aws_iam_role.github_oidc_role.name
-  policy_arn = aws_iam_policy.github_ecr_eks_policy.arn
+  policy_arn = aws_iam_policy.github_terraform_policy.arn
 }
 
 # Command to get thumbprint via terminal
