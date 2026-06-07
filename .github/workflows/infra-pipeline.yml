@@ -27,8 +27,53 @@ permissions:
   contents: read
 
 jobs:
+  ci:
+    name: CI - Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: "v0.53.0"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Validate main-infra
+        working-directory: main-infra
+        run: terraform init -backend=false && terraform validate
+
+      - name: Validate main-platform
+        working-directory: main-platform
+        run: terraform init -backend=false && terraform validate
+
+      - name: TFLint Init
+        run: tflint --init
+
+      - name: TFLint main-infra
+        working-directory: main-infra
+        run: tflint --call-module-type=all
+
+      - name: TFLint main-platform
+        working-directory: main-platform
+        run: tflint --call-module-type=all
+
+      - name: Checkov Security Scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          soft_fail: true
+          output_format: cli
+          skip_path: "cloudflare"
+
   plan-infra:
     name: Plan - main-infra (VPC)
+    needs: ci
     if: ${{ inputs.run_vpc == true }}
     runs-on: ubuntu-latest
     defaults:
@@ -93,8 +138,8 @@ jobs:
 
   plan-platform:
     name: Plan - main-platform (EKS)
-    needs: apply-infra
-    if: always() && (needs.apply-infra.result == 'success' || needs.apply-infra.result == 'skipped')
+    needs: [ci, apply-infra]
+    if: always() && needs.ci.result == 'success' && (needs.apply-infra.result == 'success' || needs.apply-infra.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
