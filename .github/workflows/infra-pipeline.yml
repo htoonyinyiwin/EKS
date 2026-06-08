@@ -26,6 +26,10 @@ on:
         description: 'Run Checkov security scan'
         type: boolean
         default: false
+      run_destroy:
+        description: 'Destroy main-platform (EKS) — skips plan/apply'
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -145,7 +149,8 @@ jobs:
   plan-platform:
     name: Plan - main-platform (EKS)
     needs: [ci, apply-infra]
-    if: always() && needs.ci.result == 'success' && (needs.apply-infra.result == 'success' || needs.apply-infra.result == 'skipped')
+    # skipped when run_destroy=true
+    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-infra.result == 'success' || needs.apply-infra.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -177,7 +182,8 @@ jobs:
   apply-platform:
     name: Apply - main-platform (EKS)
     needs: plan-platform
-    if: always() && needs.plan-platform.result == 'success'
+    # skipped when run_destroy=true
+    if: always() && inputs.run_destroy != true && needs.plan-platform.result == 'success'
     runs-on: ubuntu-latest
     environment: dev
     defaults:
@@ -206,3 +212,30 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply tfplan
+
+  destroy-platform:
+    name: Destroy - main-platform (EKS)
+    needs: ci
+    if: always() && inputs.run_destroy == true && needs.ci.result == 'success'
+    runs-on: ubuntu-latest
+    environment: dev
+    defaults:
+      run:
+        working-directory: main-platform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.dev.hcl
+
+      - name: Terraform Destroy
+        run: terraform destroy -var-file=variables.dev.tfvars -auto-approve
