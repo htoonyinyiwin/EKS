@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 
 # EKS cluster
 
-resource "aws_eks_cluster" "this" {
+resource "aws_eks_cluster" "cluster" {
   name     = "${var.project_name}-eks-${var.env}"
   role_arn = aws_iam_role.eks_cluster.arn
   version  = var.eks_version
