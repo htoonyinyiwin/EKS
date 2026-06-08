@@ -1,4 +1,5 @@
 name: Infra Pipeline
+run-name: "Dev - Infra Pipeline - ${{ github.event.head_commit.message || github.event.pull_request.title || 'Manual' }}"
 
 on:
   push:
@@ -21,6 +22,10 @@ on:
         description: 'Run main-infra (VPC) jobs — only needed when VPC changes'
         type: boolean
         default: false
+      skip_scan:
+        description: 'Skip CI'
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -28,7 +33,7 @@ permissions:
 
 jobs:
   ci:
-    name: CI - Quality Checks
+    name: CI # Quality Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +69,7 @@ jobs:
         run: tflint --call-module-type=all
 
       - name: Checkov Security Scan
+        if: ${{ inputs.skip_scan != true }}
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: .

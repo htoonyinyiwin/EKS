@@ -85,8 +85,8 @@ resource "aws_iam_role_policy_attachment" "eks_ecr_policy" {
 
 # Worker node group
 
-resource "aws_eks_node_group" "this" {
-  cluster_name    = aws_eks_cluster.this.name
+resource "aws_eks_node_group" "node_group" {
+  cluster_name    = aws_eks_cluster.cluster.name
   node_group_name = "${var.project_name}-node-group-${var.env}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = var.private_subnet_ids
