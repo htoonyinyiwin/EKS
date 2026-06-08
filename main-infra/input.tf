@@ -31,11 +31,6 @@ variable "public_subnet_tags" {
   type = map(string)
 }
 
-variable "count_read_replica" {
-  type    = number
-  default = 0
-}
-
 variable "count_eip" {
   description = "Number of EIPs to create for NAT gateways."
   type        = number
