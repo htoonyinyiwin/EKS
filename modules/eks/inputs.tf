@@ -52,3 +52,9 @@ variable "disk_size" {
   description = "EBS root volume size in GB for worker nodes"
   default     = 20
 }
+
+variable "admin_iam_arns" {
+  type        = list(string)
+  description = "IAM user/role ARNs to grant cluster admin access (kubectl)"
+  default     = []
+}

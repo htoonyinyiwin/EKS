@@ -40,3 +40,8 @@ variable "disk_size" {
   type    = number
   default = 20
 }
+
+variable "admin_iam_arns" {
+  type    = list(string)
+  default = []
+}

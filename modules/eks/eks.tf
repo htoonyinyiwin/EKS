@@ -83,6 +83,34 @@ resource "aws_iam_role_policy_attachment" "eks_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+# Cluster admin access entries — recreated on each apply/destroy cycle
+
+resource "aws_eks_access_entry" "admins" {
+  for_each = toset(var.admin_iam_arns)
+
+  cluster_name  = aws_eks_cluster.cluster.name
+  principal_arn = each.value
+  type          = "STANDARD"
+
+  tags = {
+    Environment = var.env
+  }
+}
+
+resource "aws_eks_access_policy_association" "admins" {
+  for_each = toset(var.admin_iam_arns)
+
+  cluster_name  = aws_eks_cluster.cluster.name
+  principal_arn = each.value
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.admins]
+}
+
 # Worker node group
 
 resource "aws_eks_node_group" "node_group" {

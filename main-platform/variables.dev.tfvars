@@ -9,3 +9,5 @@ desired_size   = 1
 min_size       = 1
 max_size       = 2
 disk_size      = 20
+
+admin_iam_arns = ["arn:aws:iam::298225145086:user/github-eks"]

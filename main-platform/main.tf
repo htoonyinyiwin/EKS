@@ -46,4 +46,5 @@ module "eks" {
   min_size       = var.min_size
   max_size       = var.max_size
   disk_size      = var.disk_size
+  admin_iam_arns = var.admin_iam_arns
 }
