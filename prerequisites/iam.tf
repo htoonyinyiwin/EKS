@@ -78,7 +78,10 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "ec2:DescribeNetworkInterfaces",
           "ec2:DescribeInstanceTypes",
           "ec2:DescribeLaunchTemplates", "ec2:DescribeLaunchTemplateVersions",
-          "ec2:DescribeVpcAttribute"
+          "ec2:DescribeVpcAttribute",
+          "ec2:CreateVpcEndpoint", "ec2:DeleteVpcEndpoints", "ec2:DescribeVpcEndpoints", "ec2:ModifyVpcEndpoint",
+          "ec2:DescribeVpcEndpointServices", "ec2:DescribeSecurityGroupRules",
+          "ec2:DescribePrefixLists", "ec2:DescribeAccountAttributes"
         ]
         Resource = "*"
       },
