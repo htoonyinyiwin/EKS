@@ -31,6 +31,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: read

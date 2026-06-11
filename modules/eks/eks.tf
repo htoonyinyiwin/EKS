@@ -83,6 +83,12 @@ resource "aws_iam_role_policy_attachment" "eks_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+# allows SSM Session Manager to shell into nodes — no SSH key or bastion host required
+resource "aws_iam_role_policy_attachment" "eks_ssm_policy" {
+  role       = aws_iam_role.eks_nodes.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 # Cluster admin access entries — recreated on each apply/destroy cycle
 
 resource "aws_eks_access_entry" "admins" {
@@ -140,6 +146,7 @@ resource "aws_eks_node_group" "node_group" {
     aws_iam_role_policy_attachment.eks_worker_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,
     aws_iam_role_policy_attachment.eks_ecr_policy,
+    aws_iam_role_policy_attachment.eks_ssm_policy,
   ]
 
   tags = {
