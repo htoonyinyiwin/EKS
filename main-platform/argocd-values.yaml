@@ -1,5 +1,8 @@
 global:
   domain: ""
+  image:
+    repository: 298225145086.dkr.ecr.ap-northeast-1.amazonaws.com/argocd
+    tag: v2.14.10
 
 server:
   service:
@@ -8,3 +11,13 @@ server:
 configs:
   params:
     server.insecure: true
+
+dex:
+  image:
+    repository: 298225145086.dkr.ecr.ap-northeast-1.amazonaws.com/dex
+    tag: v2.42.1
+
+redis:
+  image:
+    repository: 298225145086.dkr.ecr.ap-northeast-1.amazonaws.com/redis
+    tag: 7.4.2-alpine

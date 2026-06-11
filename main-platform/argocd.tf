@@ -17,6 +17,7 @@ resource "helm_release" "argocd" {
   version          = "7.8.26"
   namespace        = "argocd"
   create_namespace = true
+  take_ownership   = true
 
   values = [file("${path.module}/argocd-values.yaml")]
 

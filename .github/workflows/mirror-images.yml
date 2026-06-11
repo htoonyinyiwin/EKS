@@ -1,0 +1,49 @@
+name: Mirror Images to ECR
+run-name: "Mirror Images - ${{ github.event.inputs.reason || 'manual' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for mirroring (e.g. argocd upgrade)'
+        type: string
+        default: 'initial setup'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  mirror:
+    name: Mirror to ECR
+    runs-on: ubuntu-latest
+    env:
+      ECR: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-northeast-1
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region ap-northeast-1 | \
+            docker login --username AWS --password-stdin $ECR
+
+      - name: Mirror argocd
+        run: |
+          docker pull quay.io/argoproj/argocd:v2.14.10
+          docker tag  quay.io/argoproj/argocd:v2.14.10 $ECR/argocd:v2.14.10
+          docker push $ECR/argocd:v2.14.10
+
+      - name: Mirror dex
+        run: |
+          docker pull ghcr.io/dexidp/dex:v2.42.1
+          docker tag  ghcr.io/dexidp/dex:v2.42.1 $ECR/dex:v2.42.1
+          docker push $ECR/dex:v2.42.1
+
+      - name: Mirror redis
+        run: |
+          docker pull public.ecr.aws/docker/library/redis:7.4.2-alpine
+          docker tag  public.ecr.aws/docker/library/redis:7.4.2-alpine $ECR/redis:7.4.2-alpine
+          docker push $ECR/redis:7.4.2-alpine

@@ -19,6 +19,14 @@ data "aws_subnets" "private" {
   }
 }
 
+data "aws_route_table" "private" {
+  vpc_id = data.aws_vpc.this.id
+  filter {
+    name   = "tag:Name"
+    values = ["private-${var.env}"]
+  }
+}
+
 data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
