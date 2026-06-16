@@ -12,6 +12,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  security-events: write
 
 jobs:
   mirror:
@@ -30,26 +31,70 @@ jobs:
           aws ecr get-login-password --region ap-northeast-1 | \
             docker login --username AWS --password-stdin $ECR
 
-      - name: Mirror argocd
+      - name: Pull argocd
+        run: docker pull quay.io/argoproj/argocd:v2.14.10
+
+      - name: Scan argocd
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: quay.io/argoproj/argocd:v2.14.10
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push argocd
         run: |
-          docker pull quay.io/argoproj/argocd:v2.14.10
           docker tag  quay.io/argoproj/argocd:v2.14.10 $ECR/argocd:v2.14.10
           docker push $ECR/argocd:v2.14.10
 
-      - name: Mirror dex
+      - name: Pull dex
+        run: docker pull ghcr.io/dexidp/dex:v2.42.1
+
+      - name: Scan dex
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/dexidp/dex:v2.42.1
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push dex
         run: |
-          docker pull ghcr.io/dexidp/dex:v2.42.1
           docker tag  ghcr.io/dexidp/dex:v2.42.1 $ECR/dex:v2.42.1
           docker push $ECR/dex:v2.42.1
 
-      - name: Mirror redis
+      - name: Pull redis
+        run: docker pull public.ecr.aws/docker/library/redis:7.4.2-alpine
+
+      - name: Scan redis
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: public.ecr.aws/docker/library/redis:7.4.2-alpine
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push redis
         run: |
-          docker pull public.ecr.aws/docker/library/redis:7.4.2-alpine
           docker tag  public.ecr.aws/docker/library/redis:7.4.2-alpine $ECR/redis:7.4.2-alpine
           docker push $ECR/redis:7.4.2-alpine
 
-      - name: Mirror aws-load-balancer-controller
+      - name: Pull aws-load-balancer-controller
+        run: docker pull public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0
+
+      - name: Scan aws-load-balancer-controller
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push aws-load-balancer-controller
         run: |
-          docker pull public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0
           docker tag  public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0 $ECR/aws-load-balancer-controller:v2.13.0
           docker push $ECR/aws-load-balancer-controller:v2.13.0
