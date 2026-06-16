@@ -132,6 +132,16 @@ resource "aws_iam_policy" "github_terraform_policy" {
         ]
         Resource = "*"
       },
+      # Budgets — cost alerts
+      {
+        Sid    = "Budgets"
+        Effect = "Allow"
+        Action = [
+          "budgets:CreateBudget", "budgets:ModifyBudget", "budgets:DeleteBudget",
+          "budgets:ViewBudget", "budgets:DescribeBudgetActionsForBudget"
+        ]
+        Resource = "*"
+      },
       # CloudWatch Logs — EKS control plane logging
       {
         Sid    = "Logs"

@@ -28,7 +28,7 @@ Self-managed EKS cluster with EC2 worker nodes on AWS Tokyo (`ap-northeast-1`), 
 ```bash
 cd prerequisites
 terraform init -backend-config=aws-tfstate.dev.hcl
-terraform apply -var-file=tfstate-dev.tfvars
+terraform apply -var-file=variables.dev.tfvars
 ```
 
 ### 2. VPC (once only)

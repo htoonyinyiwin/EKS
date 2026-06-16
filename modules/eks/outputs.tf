@@ -18,3 +18,13 @@ output "node_role_arn" {
   value       = aws_iam_role.eks_nodes.arn
   description = "Worker node IAM role ARN"
 }
+
+output "cluster_oidc_provider_arn" {
+  value       = aws_iam_openid_connect_provider.eks.arn
+  description = "EKS OIDC provider ARN — used for IRSA trust policies"
+}
+
+output "cluster_oidc_provider" {
+  value       = replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
+  description = "EKS OIDC provider URL without https:// — used in IRSA trust conditions"
+}

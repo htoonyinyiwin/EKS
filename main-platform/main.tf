@@ -2,6 +2,8 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_vpc" "this" {
   tags = {
     Name = "${var.project_name}-infra-vpc-${var.env}"

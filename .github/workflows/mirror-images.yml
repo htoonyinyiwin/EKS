@@ -47,3 +47,9 @@ jobs:
           docker pull public.ecr.aws/docker/library/redis:7.4.2-alpine
           docker tag  public.ecr.aws/docker/library/redis:7.4.2-alpine $ECR/redis:7.4.2-alpine
           docker push $ECR/redis:7.4.2-alpine
+
+      - name: Mirror aws-load-balancer-controller
+        run: |
+          docker pull public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0
+          docker tag  public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0 $ECR/aws-load-balancer-controller:v2.13.0
+          docker push $ECR/aws-load-balancer-controller:v2.13.0

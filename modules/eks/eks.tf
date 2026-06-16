@@ -117,6 +117,23 @@ resource "aws_eks_access_policy_association" "admins" {
   depends_on = [aws_eks_access_entry.admins]
 }
 
+# OIDC provider — enables IRSA (IAM Roles for Service Accounts)
+
+data "tls_certificate" "eks_oidc" {
+  url = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks_oidc.certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+
+  tags = {
+    Name        = "${var.project_name}-eks-oidc-${var.env}"
+    Environment = var.env
+  }
+}
+
 # Worker node group
 
 resource "aws_eks_node_group" "node_group" {

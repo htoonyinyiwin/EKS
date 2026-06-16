@@ -67,6 +67,8 @@ jobs:
 
       - name: TFLint Init
         run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: TFLint main-infra
         working-directory: main-infra

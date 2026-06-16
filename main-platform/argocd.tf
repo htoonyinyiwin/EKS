@@ -19,7 +19,10 @@ resource "helm_release" "argocd" {
   create_namespace = true
   take_ownership   = true
 
-  values = [file("${path.module}/argocd-values.yaml")]
+  values = [templatefile("${path.module}/argocd-values.yaml.tftpl", {
+    account_id = data.aws_caller_identity.current.account_id
+    region     = var.region
+  })]
 
   depends_on = [module.eks]
 }

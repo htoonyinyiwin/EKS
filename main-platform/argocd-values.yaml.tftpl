@@ -1,0 +1,23 @@
+global:
+  domain: ""
+  image:
+    repository: ${account_id}.dkr.ecr.${region}.amazonaws.com/argocd
+    tag: v2.14.10
+
+server:
+  service:
+    type: ClusterIP
+
+configs:
+  params:
+    server.insecure: true
+
+dex:
+  image:
+    repository: ${account_id}.dkr.ecr.${region}.amazonaws.com/dex
+    tag: v2.42.1
+
+redis:
+  image:
+    repository: ${account_id}.dkr.ecr.${region}.amazonaws.com/redis
+    tag: 7.4.2-alpine
