@@ -283,6 +283,9 @@ jobs:
         with:
           terraform_version: "1.15.5"
 
+      - name: Helm registry login (Docker Hub — required for Bitnami OCI charts)
+        run: helm registry login registry-1.docker.io -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
+
       - name: Terraform Init
         run: terraform init -backend-config=aws-tfstate.dev.hcl
 
@@ -314,6 +317,9 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.15.5"
+
+      - name: Helm registry login (Docker Hub — required for Bitnami OCI charts)
+        run: helm registry login registry-1.docker.io -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Terraform Init
         run: terraform init -backend-config=aws-tfstate.uat.hcl
@@ -347,6 +353,9 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.15.5"
+
+      - name: Helm registry login (Docker Hub — required for Bitnami OCI charts)
+        run: helm registry login registry-1.docker.io -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Terraform Init
         run: terraform init -backend-config=aws-tfstate.uat.hcl

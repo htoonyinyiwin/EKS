@@ -5,7 +5,7 @@ locals {
 
 resource "helm_release" "postgresql" {
   name             = "postgresql"
-  repository       = "https://charts.bitnami.com/bitnami"
+  repository       = "oci://registry-1.docker.io/bitnamicharts"
   chart            = "postgresql"
   version          = "17.1.0"
   namespace        = "database"
@@ -41,7 +41,7 @@ resource "helm_release" "postgresql" {
 
 resource "helm_release" "redis" {
   name             = "redis"
-  repository       = "https://charts.bitnami.com/bitnami"
+  repository       = "oci://registry-1.docker.io/bitnamicharts"
   chart            = "redis"
   version          = "23.1.1"
   namespace        = "database"
