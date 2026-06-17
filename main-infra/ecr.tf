@@ -53,3 +53,17 @@ resource "aws_ecr_repository" "redis" {
     Environment = var.env
   }
 }
+
+resource "aws_ecr_repository" "external_secrets" {
+  name                 = "external-secrets"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name        = "external-secrets"
+    Environment = var.env
+  }
+}
