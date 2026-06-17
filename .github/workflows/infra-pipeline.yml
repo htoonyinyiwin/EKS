@@ -172,7 +172,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-uat
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -205,7 +205,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-uat
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -305,7 +305,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-uat
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -338,7 +338,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-uat
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -373,7 +373,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.destroy_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ inputs.destroy_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-${{ inputs.destroy_env }}
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3

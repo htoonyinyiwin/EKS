@@ -11,6 +11,6 @@ max_size       = 2
 disk_size      = 20
 
 admin_iam_arns = [
-  "arn:aws:iam::298225145086:user/github-eks",
-  "arn:aws:iam::298225145086:role/github-oidc-eks-ecr-role-dev",
+  "arn:aws:iam::051602877369:user/github-eksuat",
+  "arn:aws:iam::051602877369:role/github-oidc-eks-ecr-role-uat",
 ]

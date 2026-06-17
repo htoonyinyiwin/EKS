@@ -19,11 +19,11 @@ jobs:
     name: Mirror to ECR
     runs-on: ubuntu-latest
     env:
-      ECR: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com
+      ECR: ${{ secrets.AWS_ACCOUNT_ID_DEV }}.dkr.ecr.ap-northeast-1.amazonaws.com
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
           aws-region: ap-northeast-1
 
       - name: Login to ECR
