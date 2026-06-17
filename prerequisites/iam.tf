@@ -128,7 +128,8 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "ecr:GetDownloadUrlForLayer", "ecr:InitiateLayerUpload",
           "ecr:PutImage", "ecr:UploadLayerPart",
           "ecr:PutLifecyclePolicy", "ecr:GetLifecyclePolicy",
-          "ecr:TagResource", "ecr:UntagResource", "ecr:ListTagsForResource"
+          "ecr:TagResource", "ecr:UntagResource", "ecr:ListTagsForResource",
+          "ecr-public:GetAuthorizationToken", "sts:GetServiceBearerToken"
         ]
         Resource = "*"
       },
