@@ -38,11 +38,11 @@ resource "aws_secretsmanager_secret" "docker_hub" {
   }
 }
 
-# placeholder values — update the real token via console or CLI, Terraform will not overwrite it
+# placeholder values — real token must be updated manually via CLI/console after first apply, Terraform will not overwrite it
 resource "aws_secretsmanager_secret_version" "docker_hub" {
   secret_id = aws_secretsmanager_secret.docker_hub.id
   secret_string = jsonencode({
-    username    = "brianaung"
+    username    = var.docker_hub_username
     accessToken = "placeholder"
   })
 

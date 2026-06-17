@@ -47,22 +47,27 @@ resource "kubectl_manifest" "external_secret_app_db" {
       }
       data = [
         {
-          secretKey = "password"
-          remoteRef = {
-            key      = "${var.env}/app/db-password"
-            property = "password"
-          }
+          secretKey = "username"
+          remoteRef = { key = "rds/connection/${var.env}", property = "username" }
         },
         {
-          secretKey = "username"
-          remoteRef = {
-            key      = "${var.env}/app/db-password"
-            property = "username"
-          }
+          secretKey = "password"
+          remoteRef = { key = "rds/connection/${var.env}", property = "password" }
+        },
+        {
+          secretKey = "endpoint"
+          remoteRef = { key = "rds/connection/${var.env}", property = "endpoint" }
+        },
+        {
+          secretKey = "connection_string"
+          remoteRef = { key = "rds/connection/${var.env}", property = "connection_string" }
         }
       ]
     }
   })
 
-  depends_on = [kubectl_manifest.cluster_secret_store]
+  depends_on = [
+    kubectl_manifest.cluster_secret_store,
+    aws_secretsmanager_secret_version.rds_connection,
+  ]
 }

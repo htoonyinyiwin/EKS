@@ -40,3 +40,7 @@ variable "public_internet_cidr_blocks" {
   description = "List of CIDR blocks allowed to access the internet"
   type        = list(string)
 }
+
+variable "docker_hub_username" {
+  type = string
+}

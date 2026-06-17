@@ -10,3 +10,4 @@ private_subnet_tags         = {}
 public_subnet_tags          = {}
 count_eip                   = 0
 public_internet_cidr_blocks = ["0.0.0.0/0"]
+docker_hub_username         = "brianaung"

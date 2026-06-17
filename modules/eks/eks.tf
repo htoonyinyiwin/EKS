@@ -89,6 +89,24 @@ resource "aws_iam_role_policy_attachment" "eks_ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# allows nodes to trigger ECR pull-through cache (fetch images from upstream registries like Docker Hub)
+resource "aws_iam_role_policy" "eks_ecr_pull_through" {
+  name = "${var.project_name}-ecr-pull-through-${var.env}"
+  role = aws_iam_role.eks_nodes.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ecr:BatchImportUpstreamImage",
+        "ecr:CreateRepository",
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
 # Cluster admin access entries — recreated on each apply/destroy cycle
 
 resource "aws_eks_access_entry" "admins" {

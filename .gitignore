@@ -64,3 +64,5 @@ terraform.rc
 # Claude Code local memory
 .claude/
 
+# docs
+*.docx

@@ -95,7 +95,8 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "eks:CreateNodegroup", "eks:DeleteNodegroup", "eks:DescribeNodegroup", "eks:ListNodegroups", "eks:UpdateNodegroupConfig", "eks:UpdateNodegroupVersion",
           "eks:TagResource", "eks:UntagResource", "eks:ListTagsForResource",
           "eks:CreateAccessEntry", "eks:DeleteAccessEntry", "eks:DescribeAccessEntry", "eks:ListAccessEntries",
-          "eks:AssociateAccessPolicy", "eks:DisassociateAccessPolicy", "eks:ListAssociatedAccessPolicies"
+          "eks:AssociateAccessPolicy", "eks:DisassociateAccessPolicy", "eks:ListAssociatedAccessPolicies",
+          "eks:CreateAddon", "eks:DeleteAddon", "eks:DescribeAddon", "eks:ListAddons", "eks:UpdateAddon", "eks:DescribeAddonVersions"
         ]
         Resource = "*"
       },
@@ -113,7 +114,8 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "iam:AddRoleToInstanceProfile", "iam:RemoveRoleFromInstanceProfile",
           "iam:TagRole", "iam:UntagRole", "iam:ListRoleTags",
           "iam:ListRolePolicies", "iam:ListInstanceProfilesForRole",
-          "iam:UpdateAssumeRolePolicy"
+          "iam:UpdateAssumeRolePolicy",
+          "iam:PutRolePolicy", "iam:DeleteRolePolicy", "iam:GetRolePolicy"
         ]
         Resource = "*"
       },
@@ -153,6 +155,32 @@ resource "aws_iam_policy" "github_terraform_policy" {
         Action = [
           "logs:CreateLogGroup", "logs:DeleteLogGroup", "logs:DescribeLogGroups",
           "logs:PutRetentionPolicy", "logs:TagResource", "logs:ListTagsForResource"
+        ]
+        Resource = "*"
+      },
+      # RDS — PostgreSQL instance lifecycle
+      {
+        Sid    = "RDS"
+        Effect = "Allow"
+        Action = [
+          "rds:CreateDBInstance", "rds:DeleteDBInstance", "rds:DescribeDBInstances", "rds:ModifyDBInstance",
+          "rds:CreateDBSubnetGroup", "rds:DeleteDBSubnetGroup", "rds:DescribeDBSubnetGroups", "rds:ModifyDBSubnetGroup",
+          "rds:CreateDBParameterGroup", "rds:DeleteDBParameterGroup", "rds:DescribeDBParameterGroups", "rds:ModifyDBParameterGroup",
+          "rds:DescribeDBEngineVersions",
+          "rds:AddTagsToResource", "rds:ListTagsForResource", "rds:RemoveTagsFromResource"
+        ]
+        Resource = "*"
+      },
+      # ElastiCache — Redis cluster lifecycle
+      {
+        Sid    = "ElastiCache"
+        Effect = "Allow"
+        Action = [
+          "elasticache:CreateCacheCluster", "elasticache:DeleteCacheCluster", "elasticache:DescribeCacheClusters", "elasticache:ModifyCacheCluster",
+          "elasticache:CreateCacheSubnetGroup", "elasticache:DeleteCacheSubnetGroup", "elasticache:DescribeCacheSubnetGroups", "elasticache:ModifyCacheSubnetGroup",
+          "elasticache:CreateCacheParameterGroup", "elasticache:DeleteCacheParameterGroup", "elasticache:DescribeCacheParameterGroups",
+          "elasticache:DescribeCacheEngineVersions",
+          "elasticache:AddTagsToResource", "elasticache:ListTagsForResource", "elasticache:RemoveTagsFromResource"
         ]
         Resource = "*"
       },

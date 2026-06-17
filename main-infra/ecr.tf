@@ -67,31 +67,3 @@ resource "aws_ecr_repository" "external_secrets" {
     Environment = var.env
   }
 }
-
-resource "aws_ecr_repository" "bitnami_postgresql" {
-  name                 = "bitnami-postgresql"
-  image_tag_mutability = "MUTABLE"
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  tags = {
-    Name        = "bitnami-postgresql"
-    Environment = var.env
-  }
-}
-
-resource "aws_ecr_repository" "bitnami_redis" {
-  name                 = "bitnami-redis"
-  image_tag_mutability = "MUTABLE"
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  tags = {
-    Name        = "bitnami-redis"
-    Environment = var.env
-  }
-}
