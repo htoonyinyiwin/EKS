@@ -137,12 +137,12 @@ jobs:
 
       # Bitnami PostgreSQL — relational DB for the booking app, runs as StatefulSet in cluster
       - name: Pull bitnami-postgresql
-        run: docker pull docker.io/bitnami/postgresql:17.4.0-debian-12-r0
+        run: docker pull docker.io/bitnami/postgresql:17.6.0-debian-12-r4
 
       - name: Scan bitnami-postgresql
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: docker.io/bitnami/postgresql:17.4.0-debian-12-r0
+          image-ref: docker.io/bitnami/postgresql:17.6.0-debian-12-r4
           format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true
@@ -150,17 +150,17 @@ jobs:
 
       - name: Push bitnami-postgresql
         run: |
-          docker tag  docker.io/bitnami/postgresql:17.4.0-debian-12-r0 $ECR/bitnami-postgresql:17.4.0-debian-12-r0
-          docker push $ECR/bitnami-postgresql:17.4.0-debian-12-r0
+          docker tag  docker.io/bitnami/postgresql:17.6.0-debian-12-r4 $ECR/bitnami-postgresql:17.6.0-debian-12-r4
+          docker push $ECR/bitnami-postgresql:17.6.0-debian-12-r4
 
       # Bitnami Redis — in-memory cache/session store for the booking app, runs as StatefulSet in cluster
       - name: Pull bitnami-redis
-        run: docker pull docker.io/bitnami/redis:7.4.2-debian-12-r0
+        run: docker pull docker.io/bitnami/redis:8.2.1-debian-12-r0
 
       - name: Scan bitnami-redis
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: docker.io/bitnami/redis:7.4.2-debian-12-r0
+          image-ref: docker.io/bitnami/redis:8.2.1-debian-12-r0
           format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true
@@ -168,5 +168,5 @@ jobs:
 
       - name: Push bitnami-redis
         run: |
-          docker tag  docker.io/bitnami/redis:7.4.2-debian-12-r0 $ECR/bitnami-redis:7.4.2-debian-12-r0
-          docker push $ECR/bitnami-redis:7.4.2-debian-12-r0
+          docker tag  docker.io/bitnami/redis:8.2.1-debian-12-r0 $ECR/bitnami-redis:8.2.1-debian-12-r0
+          docker push $ECR/bitnami-redis:8.2.1-debian-12-r0

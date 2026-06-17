@@ -2,7 +2,7 @@ resource "helm_release" "postgresql" {
   name             = "postgresql"
   repository       = "https://charts.bitnami.com/bitnami"
   chart            = "postgresql"
-  version          = "15.5.38"
+  version          = "17.1.0"
   namespace        = "database"
   create_namespace = true
 
@@ -11,7 +11,7 @@ resource "helm_release" "postgresql" {
       image = {
         registry   = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
         repository = "bitnami-postgresql"
-        tag        = "17.4.0-debian-12-r0"
+        tag        = "17.6.0-debian-12-r4"
       }
       auth = {
         database       = "appdb"
@@ -38,7 +38,7 @@ resource "helm_release" "redis" {
   name             = "redis"
   repository       = "https://charts.bitnami.com/bitnami"
   chart            = "redis"
-  version          = "20.3.0"
+  version          = "23.1.1"
   namespace        = "database"
   create_namespace = true
 
@@ -47,7 +47,7 @@ resource "helm_release" "redis" {
       image = {
         registry   = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
         repository = "bitnami-redis"
-        tag        = "7.4.2-debian-12-r0"
+        tag        = "8.2.1-debian-12-r0"
       }
       auth = {
         enabled = false
