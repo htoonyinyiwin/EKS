@@ -105,3 +105,20 @@ jobs:
         run: |
           docker tag  public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0 $ECR/aws-load-balancer-controller:v2.13.0
           docker push $ECR/aws-load-balancer-controller:v2.13.0
+
+      - name: Pull external-secrets
+        run: docker pull ghcr.io/external-secrets/external-secrets:v0.10.7
+
+      - name: Scan external-secrets
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/external-secrets/external-secrets:v0.10.7
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push external-secrets
+        run: |
+          docker tag  ghcr.io/external-secrets/external-secrets:v0.10.7 $ECR/external-secrets:v0.10.7
+          docker push $ECR/external-secrets:v0.10.7
