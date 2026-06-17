@@ -55,8 +55,8 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "s3:PutEncryptionConfiguration"
         ]
         Resource = [
-          "arn:aws:s3:::proj-tfstate-dev",
-          "arn:aws:s3:::proj-tfstate-dev/*"
+          "arn:aws:s3:::proj-tfstate-${var.environment}",
+          "arn:aws:s3:::proj-tfstate-${var.environment}/*"
         ]
       },
       # EC2 — VPC, subnets, IGW, route tables, security groups
