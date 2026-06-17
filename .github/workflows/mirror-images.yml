@@ -125,34 +125,5 @@ jobs:
           docker tag  ghcr.io/external-secrets/external-secrets:v0.10.7 $ECR/external-secrets:v0.10.7
           docker push $ECR/external-secrets:v0.10.7
 
-      # Bitnami PostgreSQL — relational DB for the booking app, runs as StatefulSet in cluster
-      - name: Pull bitnami-postgresql
-        run: docker pull docker.io/bitnami/postgresql:17.6.0-debian-12-r4
-      # - name: Scan bitnami-postgresql
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     image-ref: docker.io/bitnami/postgresql:17.6.0-debian-12-r4
-      #     format: table
-      #     severity: CRITICAL,HIGH
-      #     ignore-unfixed: true
-      #     exit-code: "0"
-      - name: Push bitnami-postgresql
-        run: |
-          docker tag  docker.io/bitnami/postgresql:17.6.0-debian-12-r4 $ECR/bitnami-postgresql:17.6.0-debian-12-r4
-          docker push $ECR/bitnami-postgresql:17.6.0-debian-12-r4
-
-      # Bitnami Redis — in-memory cache/session store for the booking app, runs as StatefulSet in cluster
-      - name: Pull bitnami-redis
-        run: docker pull docker.io/bitnami/redis:8.2.1-debian-12-r0
-      # - name: Scan bitnami-redis
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     image-ref: docker.io/bitnami/redis:8.2.1-debian-12-r0
-      #     format: table
-      #     severity: CRITICAL,HIGH
-      #     ignore-unfixed: true
-      #     exit-code: "0"
-      - name: Push bitnami-redis
-        run: |
-          docker tag  docker.io/bitnami/redis:8.2.1-debian-12-r0 $ECR/bitnami-redis:8.2.1-debian-12-r0
-          docker push $ECR/bitnami-redis:8.2.1-debian-12-r0
+      # Bitnami PostgreSQL + Redis — handled via ECR pull-through cache (no manual mirror needed)
+      # ECR auto-fetches from Docker Hub using credentials in Secrets Manager on first pod pull
