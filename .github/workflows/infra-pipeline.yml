@@ -26,6 +26,10 @@ on:
         description: 'Run Checkov security scan'
         type: boolean
         default: false
+      run_platform_dev:
+        description: 'Run dev platform track (main-platform dev) — skip to save cost'
+        type: boolean
+        default: false
       run_destroy:
         description: 'Destroy main-platform EKS'
         type: boolean
@@ -183,13 +187,13 @@ jobs:
         run: terraform init -backend-config=aws-tfstate.uat.hcl
 
       - name: Terraform Plan
-        run: terraform plan -var-file=variables.uat.tfvars -out=dev.plan
+        run: terraform plan -var-file=variables.uat.tfvars -out=uat.plan
 
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
           name: tfplan-infra-uat
-          path: main-infra/dev.plan
+          path: main-infra/uat.plan
 
   apply-infra-uat:
     name: Apply - main-infra (uat)
@@ -222,15 +226,14 @@ jobs:
           path: main-infra
 
       - name: Terraform Apply
-        run: terraform apply dev.plan
+        run: terraform apply uat.plan
 
   # ─── PLATFORM TRACK ───────────────────────────────────────────────────────
 
   plan-platform-dev:
     name: Plan - main-platform (dev)
-    needs: [ci, apply-infra-dev]
-    # skipped when run_destroy=true
-    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-infra-dev.result == 'success' || needs.apply-infra-dev.result == 'skipped')
+    needs: [ci, apply-infra-uat]
+    if: always() && inputs.run_destroy != true && inputs.run_platform_dev == true && needs.ci.result == 'success' && (needs.apply-infra-uat.result == 'success' || needs.apply-infra-uat.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -294,8 +297,8 @@ jobs:
 
   plan-platform-uat:
     name: Plan - main-platform (uat)
-    needs: apply-platform-dev
-    if: always() && inputs.run_destroy != true && needs.apply-platform-dev.result == 'success'
+    needs: [ci, apply-platform-dev, apply-infra-uat]
+    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-platform-dev.result == 'success' || needs.apply-platform-dev.result == 'skipped') && (needs.apply-infra-uat.result == 'success' || needs.apply-infra-uat.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -316,13 +319,13 @@ jobs:
         run: terraform init -backend-config=aws-tfstate.uat.hcl
 
       - name: Terraform Plan
-        run: terraform plan -var-file=variables.uat.tfvars -out=dev.plan
+        run: terraform plan -var-file=variables.uat.tfvars -out=uat.plan
 
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
           name: tfplan-platform-uat
-          path: main-platform/dev.plan
+          path: main-platform/uat.plan
 
   apply-platform-uat:
     name: Apply - main-platform (uat)
@@ -355,7 +358,7 @@ jobs:
           path: main-platform
 
       - name: Terraform Apply
-        run: terraform apply dev.plan
+        run: terraform apply uat.plan
 
   # ─── DESTROY ──────────────────────────────────────────────────────────────
 
