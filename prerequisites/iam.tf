@@ -153,6 +153,18 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "logs:PutRetentionPolicy", "logs:TagResource", "logs:ListTagsForResource"
         ]
         Resource = "*"
+      },
+      # Secrets Manager — app secrets
+      {
+        Sid    = "SecretsManager"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:CreateSecret", "secretsmanager:DeleteSecret", "secretsmanager:DescribeSecret",
+          "secretsmanager:GetSecretValue", "secretsmanager:PutSecretValue", "secretsmanager:UpdateSecret",
+          "secretsmanager:TagResource", "secretsmanager:UntagResource", "secretsmanager:ListSecretVersionIds",
+          "secretsmanager:GetResourcePolicy", "secretsmanager:RestoreSecret"
+        ]
+        Resource = "*"
       }
     ]
   })

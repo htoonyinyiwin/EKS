@@ -8,6 +8,7 @@ locals {
     "ssm",
     "ssmmessages",
     "ec2messages",
+    "secretsmanager",
   ])
 }
 

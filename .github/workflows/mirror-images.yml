@@ -33,16 +33,19 @@ jobs:
           role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-${{ env.TARGET_ENV }}
           aws-region: ap-northeast-1
 
+      # authenticate to private ECR to push mirrored images
       - name: Login to ECR (private)
         run: |
           aws ecr get-login-password --region ap-northeast-1 | \
             docker login --username AWS --password-stdin $ECR
 
+      # authenticate to ECR Public to avoid rate limits on unauthenticated pulls (must use us-east-1)
       - name: Login to ECR Public
         run: |
           aws ecr-public get-login-password --region us-east-1 | \
             docker login --username AWS --password-stdin public.ecr.aws
 
+      # ArgoCD — GitOps continuous delivery controller
       - name: Pull argocd
         run: docker pull quay.io/argoproj/argocd:v2.14.10
 
@@ -60,6 +63,7 @@ jobs:
           docker tag  quay.io/argoproj/argocd:v2.14.10 $ECR/argocd:v2.14.10
           docker push $ECR/argocd:v2.14.10
 
+      # Dex — OIDC identity broker, bundled as ArgoCD sidecar for SSO login
       - name: Pull dex
         run: docker pull ghcr.io/dexidp/dex:v2.42.1
 
@@ -77,6 +81,7 @@ jobs:
           docker tag  ghcr.io/dexidp/dex:v2.42.1 $ECR/dex:v2.42.1
           docker push $ECR/dex:v2.42.1
 
+      # Redis (official) — used by ArgoCD internally for caching
       - name: Pull redis
         run: docker pull public.ecr.aws/docker/library/redis:7.4.2-alpine
 
@@ -94,6 +99,7 @@ jobs:
           docker tag  public.ecr.aws/docker/library/redis:7.4.2-alpine $ECR/redis:7.4.2-alpine
           docker push $ECR/redis:7.4.2-alpine
 
+      # ALB Controller — provisions AWS ALB from K8s Ingress objects
       - name: Pull aws-load-balancer-controller
         run: docker pull public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0
 
@@ -111,6 +117,7 @@ jobs:
           docker tag  public.ecr.aws/eks/aws-load-balancer-controller:v2.13.0 $ECR/aws-load-balancer-controller:v2.13.0
           docker push $ECR/aws-load-balancer-controller:v2.13.0
 
+      # External Secrets Operator — syncs AWS Secrets Manager secrets into K8s native secrets
       - name: Pull external-secrets
         run: docker pull ghcr.io/external-secrets/external-secrets:v0.10.7
 
@@ -127,3 +134,39 @@ jobs:
         run: |
           docker tag  ghcr.io/external-secrets/external-secrets:v0.10.7 $ECR/external-secrets:v0.10.7
           docker push $ECR/external-secrets:v0.10.7
+
+      # Bitnami PostgreSQL — relational DB for the booking app, runs as StatefulSet in cluster
+      - name: Pull bitnami-postgresql
+        run: docker pull docker.io/bitnami/postgresql:17.4.0-debian-12-r0
+
+      - name: Scan bitnami-postgresql
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: docker.io/bitnami/postgresql:17.4.0-debian-12-r0
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push bitnami-postgresql
+        run: |
+          docker tag  docker.io/bitnami/postgresql:17.4.0-debian-12-r0 $ECR/bitnami-postgresql:17.4.0-debian-12-r0
+          docker push $ECR/bitnami-postgresql:17.4.0-debian-12-r0
+
+      # Bitnami Redis — in-memory cache/session store for the booking app, runs as StatefulSet in cluster
+      - name: Pull bitnami-redis
+        run: docker pull docker.io/bitnami/redis:7.4.2-debian-12-r0
+
+      - name: Scan bitnami-redis
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: docker.io/bitnami/redis:7.4.2-debian-12-r0
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Push bitnami-redis
+        run: |
+          docker tag  docker.io/bitnami/redis:7.4.2-debian-12-r0 $ECR/bitnami-redis:7.4.2-debian-12-r0
+          docker push $ECR/bitnami-redis:7.4.2-debian-12-r0

@@ -2,6 +2,29 @@ provider "aws" {
   region = var.region
 }
 
+# used for standard k8s resources (Deployments, Services, etc.) — validates against live API
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--region", var.region]
+  }
+}
+
+# used for CRD-backed resources (ESO ClusterSecretStore, ExternalSecret) — no schema validation at plan time
+provider "kubectl" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
+  load_config_file       = false
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--region", var.region]
+  }
+}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_vpc" "this" {

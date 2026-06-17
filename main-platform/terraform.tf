@@ -18,5 +18,15 @@ terraform {
       source  = "hashicorp/tls"
       version = "~> 4.0"
     }
+    # hashicorp/kubernetes validates CRD schemas at plan time — fails on fresh clusters before CRDs exist
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.35"
+    }
+    # gavinbunney/kubectl skips schema validation — safe for kubectl_manifest on CRD-backed resources like ESO
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.19"
+    }
   }
 }
