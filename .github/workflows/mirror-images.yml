@@ -1,9 +1,14 @@
 name: Mirror Images to ECR
-run-name: "Mirror Images - ${{ github.event.inputs.reason || 'manual' }}"
+run-name: "Mirror Images (${{ github.event.inputs.target_env }}) - ${{ github.event.inputs.reason || 'manual' }}"
 
 on:
   workflow_dispatch:
     inputs:
+      target_env:
+        description: 'Target environment to mirror images into'
+        type: choice
+        options: [dev, uat]
+        default: uat
       reason:
         description: 'Reason for mirroring (e.g. argocd upgrade)'
         type: string
@@ -16,14 +21,16 @@ permissions:
 
 jobs:
   mirror:
-    name: Mirror to ECR
+    name: Mirror to ECR (${{ github.event.inputs.target_env }})
     runs-on: ubuntu-latest
     env:
-      ECR: ${{ secrets.AWS_ACCOUNT_ID_DEV }}.dkr.ecr.ap-northeast-1.amazonaws.com
+      TARGET_ENV: ${{ github.event.inputs.target_env }}
+      ACCOUNT_ID: ${{ github.event.inputs.target_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}
+      ECR: ${{ github.event.inputs.target_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}.dkr.ecr.ap-northeast-1.amazonaws.com
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-${{ env.TARGET_ENV }}
           aws-region: ap-northeast-1
 
       - name: Login to ECR
