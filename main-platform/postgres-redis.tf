@@ -1,3 +1,8 @@
+locals {
+  # ECR pull-through cache prefix for Docker Hub images — ECR fetches and caches on first pull
+  ecr_docker_hub = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/docker-hub"
+}
+
 resource "helm_release" "postgresql" {
   name             = "postgresql"
   repository       = "https://charts.bitnami.com/bitnami"
@@ -10,7 +15,7 @@ resource "helm_release" "postgresql" {
     yamlencode({
       image = {
         registry   = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
-        repository = "bitnami-postgresql"
+        repository = "docker-hub/bitnami/postgresql"
         tag        = "17.6.0-debian-12-r4"
       }
       auth = {
@@ -46,7 +51,7 @@ resource "helm_release" "redis" {
     yamlencode({
       image = {
         registry   = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
-        repository = "bitnami-redis"
+        repository = "docker-hub/bitnami/redis"
         tag        = "8.2.1-debian-12-r0"
       }
       auth = {
