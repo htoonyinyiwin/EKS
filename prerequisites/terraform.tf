@@ -1,13 +1,17 @@
+provider "aws" {
+  region = var.region
+}
+
 terraform {
   required_version = ">= 1.15.0"
 
-  backend "s3" {
-    # check in .hcl files
-  }
-
-  # backend "local" {
-  #   path = "state/terraform-dev.tfstate"
+  # backend "s3" {
+  #   # check in .hcl files
   # }
+
+  backend "local" {
+    path = "state2/terraform-uat.tfstate"
+  }
 
   required_providers {
 

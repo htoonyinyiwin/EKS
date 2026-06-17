@@ -1,5 +1,5 @@
 name: Infra Pipeline
-run-name: "Dev - Infra Pipeline - ${{ github.event.head_commit.message || github.event.pull_request.title || 'Manual' }}"
+run-name: "Infra Pipeline - ${{ github.event.head_commit.message || github.event.pull_request.title || 'Manual' }}"
 
 on:
   push:
@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       run_vpc:
-        description: 'Run main-infra (VPC) jobs — only needed when VPC changes'
+        description: 'Run VPC track (main-infra) — dev then uat'
         type: boolean
         default: false
       run_scan:
@@ -27,9 +27,14 @@ on:
         type: boolean
         default: false
       run_destroy:
-        description: 'Destroy main-platform (EKS) — skips plan/apply'
+        description: 'Destroy main-platform EKS'
         type: boolean
         default: false
+      destroy_env:
+        description: 'Target environment to destroy'
+        type: choice
+        options: [dev, uat]
+        default: dev
 
 concurrency:
   group: infra-${{ github.ref }}
@@ -41,7 +46,7 @@ permissions:
 
 jobs:
   ci:
-    name: CI # Quality Checks
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -87,8 +92,10 @@ jobs:
           output_format: cli
           skip_path: "cloudflare"
 
-  plan-infra:
-    name: Plan - main-infra (VPC)
+  # ─── VPC TRACK ────────────────────────────────────────────────────────────
+
+  plan-infra-dev:
+    name: Plan - main-infra (dev)
     needs: ci
     if: ${{ inputs.run_vpc == true }}
     runs-on: ubuntu-latest
@@ -100,7 +107,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -111,17 +118,17 @@ jobs:
         run: terraform init -backend-config=aws-tfstate.dev.hcl
 
       - name: Terraform Plan
-        run: terraform plan -var-file=variables.dev.tfvars -out=tfplan
+        run: terraform plan -var-file=variables.dev.tfvars -out=dev.plan
 
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-infra
-          path: main-infra/tfplan
+          name: tfplan-infra-dev
+          path: main-infra/dev.plan
 
-  apply-infra:
-    name: Apply - main-infra (VPC)
-    needs: plan-infra
+  apply-infra-dev:
+    name: Apply - main-infra (dev)
+    needs: plan-infra-dev
     if: ${{ inputs.run_vpc == true }}
     runs-on: ubuntu-latest
     environment: dev
@@ -133,7 +140,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -146,17 +153,84 @@ jobs:
       - name: Download Plan
         uses: actions/download-artifact@v4
         with:
-          name: tfplan-infra
+          name: tfplan-infra-dev
           path: main-infra
 
       - name: Terraform Apply
-        run: terraform apply tfplan
+        run: terraform apply dev.plan
 
-  plan-platform:
-    name: Plan - main-platform (EKS)
-    needs: [ci, apply-infra]
+  plan-infra-uat:
+    name: Plan - main-infra (uat)
+    needs: apply-infra-dev
+    if: ${{ inputs.run_vpc == true }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main-infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.uat.hcl
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=variables.uat.tfvars -out=dev.plan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-infra-uat
+          path: main-infra/dev.plan
+
+  apply-infra-uat:
+    name: Apply - main-infra (uat)
+    needs: plan-infra-uat
+    if: ${{ inputs.run_vpc == true }}
+    runs-on: ubuntu-latest
+    environment: uat
+    defaults:
+      run:
+        working-directory: main-infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.uat.hcl
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-infra-uat
+          path: main-infra
+
+      - name: Terraform Apply
+        run: terraform apply dev.plan
+
+  # ─── PLATFORM TRACK ───────────────────────────────────────────────────────
+
+  plan-platform-dev:
+    name: Plan - main-platform (dev)
+    needs: [ci, apply-infra-dev]
     # skipped when run_destroy=true
-    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-infra.result == 'success' || needs.apply-infra.result == 'skipped')
+    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-infra-dev.result == 'success' || needs.apply-infra-dev.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -166,7 +240,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -177,19 +251,18 @@ jobs:
         run: terraform init -backend-config=aws-tfstate.dev.hcl
 
       - name: Terraform Plan
-        run: terraform plan -var-file=variables.dev.tfvars -out=tfplan
+        run: terraform plan -var-file=variables.dev.tfvars -out=dev.plan
 
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-platform
-          path: main-platform/tfplan
+          name: tfplan-platform-dev
+          path: main-platform/dev.plan
 
-  apply-platform:
-    name: Apply - main-platform (EKS)
-    needs: plan-platform
-    # skipped when run_destroy=true
-    if: always() && inputs.run_destroy != true && needs.plan-platform.result == 'success'
+  apply-platform-dev:
+    name: Apply - main-platform (dev)
+    needs: plan-platform-dev
+    if: always() && inputs.run_destroy != true && needs.plan-platform-dev.result == 'success'
     runs-on: ubuntu-latest
     environment: dev
     defaults:
@@ -200,7 +273,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -213,18 +286,17 @@ jobs:
       - name: Download Plan
         uses: actions/download-artifact@v4
         with:
-          name: tfplan-platform
+          name: tfplan-platform-dev
           path: main-platform
 
       - name: Terraform Apply
-        run: terraform apply tfplan
+        run: terraform apply dev.plan
 
-  destroy-platform:
-    name: Destroy - main-platform (EKS)
-    needs: ci
-    if: always() && inputs.run_destroy == true && needs.ci.result == 'success'
+  plan-platform-uat:
+    name: Plan - main-platform (uat)
+    needs: apply-platform-dev
+    if: always() && inputs.run_destroy != true && needs.apply-platform-dev.result == 'success'
     runs-on: ubuntu-latest
-    environment: dev
     defaults:
       run:
         working-directory: main-platform
@@ -233,7 +305,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-eks-ecr-role-dev
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
@@ -241,7 +313,75 @@ jobs:
           terraform_version: "1.15.5"
 
       - name: Terraform Init
-        run: terraform init -backend-config=aws-tfstate.dev.hcl
+        run: terraform init -backend-config=aws-tfstate.uat.hcl
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=variables.uat.tfvars -out=dev.plan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-platform-uat
+          path: main-platform/dev.plan
+
+  apply-platform-uat:
+    name: Apply - main-platform (uat)
+    needs: plan-platform-uat
+    if: always() && inputs.run_destroy != true && needs.plan-platform-uat.result == 'success'
+    runs-on: ubuntu-latest
+    environment: uat
+    defaults:
+      run:
+        working-directory: main-platform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_UAT }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.uat.hcl
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-platform-uat
+          path: main-platform
+
+      - name: Terraform Apply
+        run: terraform apply dev.plan
+
+  # ─── DESTROY ──────────────────────────────────────────────────────────────
+
+  destroy-platform:
+    name: Destroy - main-platform (${{ inputs.destroy_env }})
+    needs: ci
+    if: always() && inputs.run_destroy == true && needs.ci.result == 'success'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.destroy_env }}
+    defaults:
+      run:
+        working-directory: main-platform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.destroy_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-dev
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.${{ inputs.destroy_env }}.hcl
 
       - name: Terraform Destroy
-        run: terraform destroy -var-file=variables.dev.tfvars -auto-approve
+        run: terraform destroy -var-file=variables.${{ inputs.destroy_env }}.tfvars -auto-approve

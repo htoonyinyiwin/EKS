@@ -1,4 +1,4 @@
-region          = "thailand"
+region          = "ap-southeast-7"
 environment     = "dev"
 company_name    = "company"
 project_name    = "proj"
