@@ -138,7 +138,8 @@ resource "aws_iam_policy" "github_terraform_policy" {
         Effect = "Allow"
         Action = [
           "budgets:CreateBudget", "budgets:ModifyBudget", "budgets:DeleteBudget",
-          "budgets:ViewBudget", "budgets:DescribeBudgetActionsForBudget"
+          "budgets:ViewBudget", "budgets:DescribeBudgetActionsForBudget",
+          "budgets:ListTagsForResource", "budgets:TagResource", "budgets:UntagResource"
         ]
         Resource = "*"
       },

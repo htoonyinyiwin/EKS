@@ -5,13 +5,13 @@ provider "aws" {
 terraform {
   required_version = ">= 1.15.0"
 
-  # backend "s3" {
-  #   # check in .hcl files
-  # }
-
-  backend "local" {
-    path = "state2/terraform-uat.tfstate"
+  backend "s3" {
+    # check in .hcl files
   }
+
+  # backend "local" {
+  #   path = "state2/terraform-uat.tfstate"
+  # }
 
   required_providers {
 
