@@ -25,5 +25,5 @@ resource "helm_release" "argocd" {
     region     = var.region
   })]
 
-  depends_on = [module.eks]
+  depends_on = [module.eks, helm_release.alb_controller]
 }
