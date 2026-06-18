@@ -13,11 +13,20 @@ spec:
       labels:
         app: booking-app
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: booking-app
           image: 051602877369.dkr.ecr.ap-northeast-1.amazonaws.com/booking-app:0b2fb09ab65c44b937ecfad5873b43704964d74d
           ports:
             - containerPort: 8000
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -37,6 +46,8 @@ spec:
           volumeMounts:
             - name: receipts
               mountPath: /data/receipts
+            - name: tmp
+              mountPath: /tmp
           livenessProbe:
             httpGet:
               path: /health
@@ -53,3 +64,5 @@ spec:
         - name: receipts
           persistentVolumeClaim:
             claimName: receipts-pvc
+        - name: tmp
+          emptyDir: {}

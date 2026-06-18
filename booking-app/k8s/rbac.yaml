@@ -1,0 +1,47 @@
+---
+# developer role — read pods/logs/exec, cannot delete or modify deployments
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: booking-app-developer
+  namespace: booking-app
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+# readonly role — list/watch only, no exec
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: booking-app-readonly
+  namespace: booking-app
+rules:
+  - apiGroups: ["", "apps"]
+    resources: ["pods", "pods/log", "deployments", "replicasets", "services", "configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+# example binding — attach developer role to a ServiceAccount
+# replace serviceaccount name with actual user/SA when needed
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: booking-app-developer-binding
+  namespace: booking-app
+subjects:
+  - kind: ServiceAccount
+    name: booking-app-developer-sa
+    namespace: booking-app
+roleRef:
+  kind: Role
+  name: booking-app-developer
+  apiGroup: rbac.authorization.k8s.io

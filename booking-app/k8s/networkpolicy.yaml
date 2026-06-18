@@ -1,0 +1,58 @@
+---
+# default deny — block all ingress and egress for booking-app pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: booking-app
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# allow ingress from ALB on port 8000
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-alb-ingress
+  namespace: booking-app
+spec:
+  podSelector:
+    matchLabels:
+      app: booking-app
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - port: 8000
+---
+# allow egress to RDS (5432) and Redis (6379) within VPC
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-aws-services
+  namespace: booking-app
+spec:
+  podSelector:
+    matchLabels:
+      app: booking-app
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 5432  # RDS PostgreSQL
+        - port: 6379  # ElastiCache Redis
+      to:
+        - ipBlock:
+            cidr: 10.10.0.0/22  # VPC CIDR — RDS and Redis live here
+    - ports:
+        - port: 443   # AWS Secrets Manager / ESO
+      to:
+        - ipBlock:
+            cidr: 10.10.0.0/22
+    - ports:
+        - port: 53    # DNS
+          protocol: UDP
+        - port: 53
+          protocol: TCP
