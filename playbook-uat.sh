@@ -25,14 +25,15 @@ echo $AWS_PROFILE
 # STEP 3 — main-platform (EKS + ArgoCD + ALB controller)
 # ─────────────────────────────────────────────
 
-cd main-platform
 echo "cd main-platform"
+cd main-platform
 
-terraform init -reconfigure -backend-config=aws-tfstate.uat.hcl
 echo "terraform init"
+terraform init -reconfigure -backend-config=aws-tfstate.uat.hcl
 
-terraform plan -var-file=variables.uat.tfvars -out=uat.plan
 echo "terraform plan"
+terraform plan -var-file=variables.uat.tfvars -out=uat.plan
+
 
 # ─────────────────────────────────────────────
 # STEP 4 — Access ArgoCD UI
