@@ -5,9 +5,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "main-infra/**"
-      - "main-platform/**"
-      - "modules/**"
+      # - "main-infra/**"
+      # - "main-platform/**"
+      # - "modules/**"
       - ".github/workflows/**"
   pull_request:
     branches: [main]
