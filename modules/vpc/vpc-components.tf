@@ -25,36 +25,35 @@ resource "aws_internet_gateway" "this" {
 
 # vpc NAT gateway
 
-resource "aws_eip" "this" {
-  tags = {
-    Name = "nat-${var.env}"
-  }
-}
+# resource "aws_eip" "this" {
+#   tags = {
+#     Name = "nat-${var.env}"
+#   }
+# }
 
-resource "aws_nat_gateway" "this" {
-  allocation_id = aws_eip.this.id
-  subnet_id     = aws_subnet.public[0].id
+# resource "aws_nat_gateway" "this" {
+#   allocation_id = aws_eip.this.id
+#   subnet_id     = aws_subnet.public[0].id
 
-  tags = {
-    Name = "nat-${var.env}"
-  }
+#   tags = {
+#     Name = "nat-${var.env}"
+#   }
 
-  depends_on = [aws_internet_gateway.this, aws_subnet.public, aws_eip.this]
-}
+#   depends_on = [aws_internet_gateway.this, aws_subnet.public, aws_eip.this]
+# }
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.this.id
-  }
+  # route added dynamically by main-platform nat.tf
+  # route {
+  #   cidr_block     = "0.0.0.0/0"
+  #   nat_gateway_id = aws_nat_gateway.this.id
+  # }
 
   tags = {
     Name = "private-${var.env}"
   }
-
-  depends_on = [aws_nat_gateway.this]
 }
 
 resource "aws_route_table" "public" {
