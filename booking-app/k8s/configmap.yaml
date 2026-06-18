@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booking-app-config
+  namespace: booking-app
+data:
+  REDIS_HOST: "eks-redis-uat.uublem.0001.apne1.cache.amazonaws.com"
+  REDIS_PORT: "6379"

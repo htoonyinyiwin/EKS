@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-app
+  namespace: booking-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-app
+  template:
+    metadata:
+      labels:
+        app: booking-app
+    spec:
+      containers:
+        - name: booking-app
+          image: 051602877369.dkr.ecr.ap-northeast-1.amazonaws.com/booking-app:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-db-secret
+                  key: connection_string
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: booking-app-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: booking-app-config
+                  key: REDIS_PORT
+          volumeMounts:
+            - name: receipts
+              mountPath: /data/receipts
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: receipts
+          persistentVolumeClaim:
+            claimName: receipts-pvc
