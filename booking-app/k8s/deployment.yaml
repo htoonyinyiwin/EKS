@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: booking-app
-          image: 051602877369.dkr.ecr.ap-northeast-1.amazonaws.com/booking-app:latest
+          image: 051602877369.dkr.ecr.ap-northeast-1.amazonaws.com/booking-app:0b2fb09ab65c44b937ecfad5873b43704964d74d
           ports:
             - containerPort: 8000
           env:
