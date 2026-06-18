@@ -2,20 +2,21 @@ name: Infra Pipeline
 run-name: "Infra Pipeline - ${{ github.event.head_commit.message || github.event.pull_request.title || 'Manual' }}"
 
 on:
-  push:
-    branches: [main]
-    paths:
-      # - "main-infra/**"
-      # - "main-platform/**"
-      # - "modules/**"
-      - ".github/workflows/**"
-  pull_request:
-    branches: [main]
-    paths:
-      - "main-infra/**"
-      - "main-platform/**"
-      - "modules/**"
-      - ".github/workflows/**"
+  # push and pull_request disabled — trigger manually via workflow_dispatch only
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "main-infra/**"
+  #     - "main-platform/**"
+  #     - "modules/**"
+  #     - ".github/workflows/**"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - "main-infra/**"
+  #     - "main-platform/**"
+  #     - "modules/**"
+  #     - ".github/workflows/**"
   workflow_dispatch:
     inputs:
       run_vpc:
@@ -38,7 +39,7 @@ on:
         description: 'Target environment to destroy'
         type: choice
         options: [dev, uat]
-        default: dev
+        default: uat
 
 concurrency:
   group: infra-${{ github.ref }}

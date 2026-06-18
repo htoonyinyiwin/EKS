@@ -82,7 +82,7 @@ resource "aws_iam_policy" "github_terraform_policy" {
           "ec2:CreateVpcEndpoint", "ec2:DeleteVpcEndpoints", "ec2:DescribeVpcEndpoints", "ec2:ModifyVpcEndpoint",
           "ec2:DescribeVpcEndpointServices", "ec2:DescribeSecurityGroupRules",
           "ec2:DescribePrefixLists", "ec2:DescribeAccountAttributes",
-          "ec2:AllocateAddress", "ec2:ReleaseAddress", "ec2:DescribeAddresses",
+          "ec2:AllocateAddress", "ec2:ReleaseAddress", "ec2:DescribeAddresses", "ec2:DescribeAddressesAttribute",
           "ec2:CreateNatGateway", "ec2:DeleteNatGateway", "ec2:DescribeNatGateways",
           "ec2:AssociateAddress", "ec2:DisassociateAddress"
         ]
