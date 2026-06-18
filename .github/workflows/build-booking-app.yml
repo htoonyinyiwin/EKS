@@ -1,6 +1,7 @@
 name: Build Booking App
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:

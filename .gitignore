@@ -9,6 +9,7 @@ helm-config.yaml
 *locals.tf
 schema.sql
 Dockerfile
+!booking-app/Dockerfile
 index.html
 *playbook.*.sh
 
