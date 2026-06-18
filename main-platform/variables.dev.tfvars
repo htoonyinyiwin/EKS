@@ -16,10 +16,10 @@ admin_iam_arns = [
 ]
 
 # RDS
-db_instance_class  = "db.t3.micro"
-db_engine_version  = "17"
-db_name            = "appdb"
-db_username        = "app_user"
+db_instance_class = "db.t3.micro"
+db_engine_version = "17"
+db_name           = "appdb"
+db_username       = "app_user"
 
 # ElastiCache Redis
 redis_node_type                  = "cache.t3.micro"
