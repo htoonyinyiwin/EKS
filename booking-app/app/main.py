@@ -6,9 +6,11 @@ from pathlib import Path
 import psycopg2
 import redis
 from fastapi import FastAPI, HTTPException
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
 app = FastAPI(title="Vehicle Booking API")
+Instrumentator().instrument(app).expose(app)
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
