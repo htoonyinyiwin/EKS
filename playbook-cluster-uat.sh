@@ -14,5 +14,8 @@ echo "ArgoCD admin password:"
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d && echo
 
-# Port forward — open http://localhost:8080 in browser
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+# Port forward ArgoCD — open https://localhost:8080 in browser
+kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+
+# Port forward Grafana — open http://localhost:3000 in browser (admin / admin)
+kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80

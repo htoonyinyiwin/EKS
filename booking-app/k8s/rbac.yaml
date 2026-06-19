@@ -30,8 +30,13 @@ rules:
     resources: ["pods", "pods/log", "deployments", "replicasets", "services", "configmaps"]
     verbs: ["get", "list", "watch"]
 ---
-# example binding — attach developer role to a ServiceAccount
-# replace serviceaccount name with actual user/SA when needed
+# ServiceAccount for developers — bind this to a human user or CI tool
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: booking-app-developer-sa
+  namespace: booking-app
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:

@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: booking-app-alerts
+  namespace: booking-app
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: booking-app
+      rules:
+        - alert: BookingAppDown
+          expr: up{job="booking-app"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Booking app is down"
+            description: "No booking-app pods are responding to scrapes."
+
+        - alert: BookingAppHighErrorRate
+          expr: |
+            rate(http_requests_total{job="booking-app", status_code=~"5.."}[5m])
+            /
+            rate(http_requests_total{job="booking-app"}[5m]) > 0.05
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Booking app high error rate"
+            description: "More than 5% of requests are returning 5xx errors."
+
+        - alert: BookingAppHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              rate(http_request_duration_seconds_bucket{job="booking-app"}[5m])
+            ) > 2
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Booking app high latency"
+            description: "95th percentile latency is above 2 seconds."
+
+        - alert: BookingAppPodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total{namespace="booking-app"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Booking app pod is crash looping"
+            description: "Pod {{ $labels.pod }} has restarted multiple times."

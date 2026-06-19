@@ -22,10 +22,13 @@ resource "helm_release" "prometheus" {
               }
             }
           }
-          # scrape ServiceMonitors from all namespaces
+          # scrape ServiceMonitors and PrometheusRules from all namespaces
           serviceMonitorSelectorNilUsesHelmValues = false
           serviceMonitorNamespaceSelector         = {}
           serviceMonitorSelector                  = {}
+          ruleSelectorNilUsesHelmValues           = false
+          ruleNamespaceSelector                   = {}
+          ruleSelector                            = {}
         }
       }
 
@@ -34,11 +37,11 @@ resource "helm_release" "prometheus" {
         ingress = {
           enabled = true
           annotations = {
-            "kubernetes.io/ingress.class"                = "alb"
-            "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
-            "alb.ingress.kubernetes.io/target-type"      = "ip"
+            "kubernetes.io/ingress.class"           = "alb"
+            "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
+            "alb.ingress.kubernetes.io/target-type" = "ip"
           }
-          hosts = ["grafana.${var.env}.internal"]
+          hosts = []
         }
         persistence = {
           enabled          = true
@@ -69,5 +72,6 @@ resource "helm_release" "prometheus" {
     module.eks,
     helm_release.alb_controller,
     aws_eks_addon.ebs_csi,
+    kubernetes_storage_class.gp3,
   ]
 }

@@ -27,6 +27,26 @@ spec:
     - ports:
         - port: 8000
 ---
+# allow ingress from Prometheus (monitoring namespace) to scrape /metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: booking-app
+spec:
+  podSelector:
+    matchLabels:
+      app: booking-app
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 8000
+---
 # allow egress to RDS (5432) and Redis (6379) within VPC
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
