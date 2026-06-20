@@ -5,6 +5,7 @@ resource "helm_release" "prometheus" {
   version          = "61.9.0"
   namespace        = "monitoring"
   create_namespace = true
+  timeout          = 600
 
   values = [
     yamlencode({
