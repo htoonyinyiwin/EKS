@@ -23,6 +23,16 @@ resource "helm_release" "prometheus" {
               }
             }
           }
+          remoteWrite = [
+            {
+              url = "https://prometheus-prod-37-prod-ap-southeast-1.grafana.net/api/prom/push"
+              basicAuth = {
+                username = { name = "grafana-cloud-secret", key = "username" }
+                password = { name = "grafana-cloud-secret", key = "password" }
+              }
+            }
+          ]
+
           # scrape ServiceMonitors and PrometheusRules from all namespaces
           serviceMonitorSelectorNilUsesHelmValues = false
           serviceMonitorNamespaceSelector         = {}

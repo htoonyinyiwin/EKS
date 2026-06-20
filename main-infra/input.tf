@@ -41,6 +41,36 @@ variable "public_internet_cidr_blocks" {
   type        = list(string)
 }
 
-variable "docker_hub_username" {
-  type = string
+# variable "docker_hub_username" {
+#   type = string
+# }
+
+variable "ecr_images_to_retain" {
+  description = "Number of images to keep per ECR repository"
+  type        = number
+  default     = 10
+}
+
+variable "count_ecr_replication_configuration" {
+  description = "Set to 1 in source account (dev) to replicate images to destination account"
+  type        = number
+  default     = 0
+}
+
+variable "count_ecr_registry_policy" {
+  description = "Set to 1 in destination accounts (uat/prod) to allow replication from dev"
+  type        = number
+  default     = 0
+}
+
+variable "ecr_replication_destination_account_id" {
+  description = "Target AWS account ID for ECR replication (uat or prod account)"
+  type        = string
+  default     = ""
+}
+
+variable "ecr_source_account_id" {
+  description = "Source AWS account ID allowed to replicate images (dev account)"
+  type        = string
+  default     = ""
 }

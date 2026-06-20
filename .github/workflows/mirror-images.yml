@@ -10,7 +10,7 @@ on:
         options: [dev, uat]
         default: uat
       reason:
-        description: 'Reason for mirroring (e.g. argocd upgrade)'
+        description: 'Reason for mirroring'
         type: string
         default: 'initial setup'
 

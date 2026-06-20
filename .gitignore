@@ -67,3 +67,5 @@ terraform.rc
 
 # docs
 *.docx
+
+ecr-sample
