@@ -75,6 +75,11 @@ resource "helm_release" "prometheus" {
               }
             }
           }
+          # watch AlertmanagerConfig resources with this label across all namespaces
+          alertmanagerConfigSelector = {
+            matchLabels = { alertmanagerConfig = "true" }
+          }
+          alertmanagerConfigNamespaceSelector = {} # empty = all namespaces
         }
       }
     })
