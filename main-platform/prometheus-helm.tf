@@ -6,6 +6,7 @@ resource "helm_release" "prometheus" {
   namespace        = "monitoring"
   create_namespace = true
   timeout          = 600
+  wait             = false # pods depend on grafana-cloud-secret which ESO syncs async; don't block tf apply
 
   values = [
     yamlencode({
