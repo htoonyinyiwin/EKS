@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run once after cloning: chmod +x playbook-cluster-prod.sh
+# Run once after cloning: chmod +x playbook-cluster-uat.sh
 
 export AWS_PROFILE=github-eksuat
 echo $AWS_PROFILE
@@ -18,5 +18,9 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 # Port forward ArgoCD — open https://localhost:8080 in browser
 kubectl port-forward svc/argocd-server -n argocd 8080:443 &
 
-# Port forward Grafana — open http://localhost:3000 in browser (admin / admin)
-kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80
+# Port forward Grafana — uncomment if needed for local in-cluster Grafana access
+# kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3000:80 &
+
+echo "Port forwards running in background."
+echo "  ArgoCD  → https://localhost:8080"
+echo "  To stop: pkill -f 'kubectl port-forward'"

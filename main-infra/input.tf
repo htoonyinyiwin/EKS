@@ -63,8 +63,14 @@ variable "count_ecr_registry_policy" {
   default     = 0
 }
 
-variable "ecr_replication_destination_account_id" {
-  description = "Target AWS account ID for ECR replication (uat or prod account)"
+variable "ecr_replication_destination_prod_account_id" {
+  description = "Target AWS account ID for ECR replication (prod account)"
+  type        = string
+  default     = ""
+}
+
+variable "ecr_replication_destination_dev_account_id" {
+  description = "Dev AWS account ID for ECR replication"
   type        = string
   default     = ""
 }

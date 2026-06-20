@@ -39,7 +39,12 @@ resource "aws_ecr_replication_configuration" "main" {
 
       destination {
         region      = "ap-northeast-1"
-        registry_id = var.ecr_replication_destination_account_id
+        registry_id = var.ecr_replication_destination_prod_account_id # Prod account
+      }
+
+      destination {
+        region      = "ap-northeast-1"
+        registry_id = var.ecr_replication_destination_dev_account_id # Dev account
       }
     }
   }
