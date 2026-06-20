@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run once after cloning: chmod +x playbook-cluster-prod.sh
 
 export AWS_PROFILE=github-eksuat
 echo $AWS_PROFILE

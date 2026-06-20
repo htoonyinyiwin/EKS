@@ -10,7 +10,7 @@ terraform {
   }
 
   # backend "local" {
-  #   path = "state2/terraform-uat.tfstate"
+  #   path = "stateuat/terraform-uat.tfstate"
   # }
 
   required_providers {
