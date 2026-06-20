@@ -31,6 +31,14 @@ on:
         description: 'Run dev platform track (main-platform dev) — skip to save cost'
         type: boolean
         default: false
+      run_vpc_prod:
+        description: 'Run prod VPC track (main-infra prod) — runs after UAT VPC'
+        type: boolean
+        default: false
+      run_platform_prod:
+        description: 'Run prod platform track (main-platform prod) — runs after UAT platform'
+        type: boolean
+        default: false
       run_destroy:
         description: 'Destroy main-platform EKS'
         type: boolean
@@ -38,7 +46,7 @@ on:
       destroy_env:
         description: 'Target environment to destroy'
         type: choice
-        options: [dev, uat]
+        options: [dev, uat, prod]
         default: uat
 
 concurrency:
@@ -230,6 +238,71 @@ jobs:
       - name: Terraform Apply
         run: terraform apply uat.plan
 
+  plan-infra-prod:
+    name: Plan - main-infra (prod)
+    needs: apply-infra-uat
+    if: ${{ inputs.run_vpc == true && inputs.run_vpc_prod == true }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main-infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_PROD }}:role/github-oidc-eks-ecr-role-prod
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.prod.hcl
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=variables.prod.tfvars -out=prod.plan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-infra-prod
+          path: main-infra/prod.plan
+
+  apply-infra-prod:
+    name: Apply - main-infra (prod)
+    needs: plan-infra-prod
+    if: ${{ inputs.run_vpc == true && inputs.run_vpc_prod == true }}
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: main-infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_PROD }}:role/github-oidc-eks-ecr-role-prod
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.prod.hcl
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-infra-prod
+          path: main-infra
+
+      - name: Terraform Apply
+        run: terraform apply prod.plan
+
   # ─── PLATFORM TRACK ───────────────────────────────────────────────────────
 
   plan-platform-dev:
@@ -362,6 +435,71 @@ jobs:
       - name: Terraform Apply
         run: terraform apply uat.plan
 
+  plan-platform-prod:
+    name: Plan - main-platform (prod)
+    needs: [ci, apply-platform-uat]
+    if: always() && inputs.run_destroy != true && inputs.run_platform_prod == true && needs.ci.result == 'success' && (needs.apply-platform-uat.result == 'success' || needs.apply-platform-uat.result == 'skipped')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main-platform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_PROD }}:role/github-oidc-eks-ecr-role-prod
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.prod.hcl
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=variables.prod.tfvars -out=prod.plan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-platform-prod
+          path: main-platform/prod.plan
+
+  apply-platform-prod:
+    name: Apply - main-platform (prod)
+    needs: plan-platform-prod
+    if: always() && inputs.run_destroy != true && needs.plan-platform-prod.result == 'success'
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: main-platform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_PROD }}:role/github-oidc-eks-ecr-role-prod
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Terraform Init
+        run: terraform init -backend-config=aws-tfstate.prod.hcl
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-platform-prod
+          path: main-platform
+
+      - name: Terraform Apply
+        run: terraform apply prod.plan
+
   # ─── DESTROY ──────────────────────────────────────────────────────────────
 
   destroy-platform:
@@ -377,7 +515,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.destroy_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-${{ inputs.destroy_env }}
+          role-to-assume: arn:aws:iam::${{ inputs.destroy_env == 'prod' && secrets.AWS_ACCOUNT_ID_PROD || inputs.destroy_env == 'uat' && secrets.AWS_ACCOUNT_ID_UAT || secrets.AWS_ACCOUNT_ID_DEV }}:role/github-oidc-eks-ecr-role-${{ inputs.destroy_env }}
           aws-region: ap-northeast-1
 
       - uses: hashicorp/setup-terraform@v3
