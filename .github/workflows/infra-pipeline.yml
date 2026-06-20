@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       run_vpc:
-        description: 'Run VPC track (main-infra) — dev then uat'
+        description: 'Run VPC track (main-infra) — dev VPC, then uat VPC after dev platform'
         type: boolean
         default: false
       run_scan:
@@ -106,7 +106,7 @@ jobs:
           output_format: cli
           skip_path: "cloudflare"
 
-  # ─── VPC TRACK ────────────────────────────────────────────────────────────
+  # ─── DEV ──────────────────────────────────────────────────────────────────
 
   plan-infra-dev:
     name: Plan - main-infra (dev)
@@ -173,10 +173,12 @@ jobs:
       - name: Terraform Apply
         run: terraform apply dev.plan
 
+  # ─── UAT ──────────────────────────────────────────────────────────────────
+
   plan-infra-uat:
     name: Plan - main-infra (uat)
-    needs: apply-infra-dev
-    if: ${{ inputs.run_vpc == true }}
+    needs: [apply-infra-dev, apply-platform-dev]
+    if: always() && inputs.run_vpc == true && (needs.apply-infra-dev.result == 'success' || needs.apply-infra-dev.result == 'skipped') && (needs.apply-platform-dev.result == 'success' || needs.apply-platform-dev.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -238,10 +240,12 @@ jobs:
       - name: Terraform Apply
         run: terraform apply uat.plan
 
+  # ─── PROD ─────────────────────────────────────────────────────────────────
+
   plan-infra-prod:
     name: Plan - main-infra (prod)
-    needs: apply-infra-uat
-    if: ${{ inputs.run_vpc == true && inputs.run_vpc_prod == true }}
+    needs: apply-platform-uat
+    if: always() && inputs.run_vpc_prod == true && (needs.apply-platform-uat.result == 'success' || needs.apply-platform-uat.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -273,7 +277,7 @@ jobs:
   apply-infra-prod:
     name: Apply - main-infra (prod)
     needs: plan-infra-prod
-    if: ${{ inputs.run_vpc == true && inputs.run_vpc_prod == true }}
+    if: always() && inputs.run_vpc_prod == true && needs.plan-infra-prod.result == 'success'
     runs-on: ubuntu-latest
     environment: prod
     defaults:
@@ -303,12 +307,10 @@ jobs:
       - name: Terraform Apply
         run: terraform apply prod.plan
 
-  # ─── PLATFORM TRACK ───────────────────────────────────────────────────────
-
   plan-platform-dev:
     name: Plan - main-platform (dev)
-    needs: [ci, apply-infra-uat]
-    if: always() && inputs.run_destroy != true && inputs.run_platform_dev == true && needs.ci.result == 'success' && (needs.apply-infra-uat.result == 'success' || needs.apply-infra-uat.result == 'skipped')
+    needs: [ci, apply-infra-dev]
+    if: always() && inputs.run_destroy != true && inputs.run_platform_dev == true && needs.ci.result == 'success' && (needs.apply-infra-dev.result == 'success' || needs.apply-infra-dev.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -372,8 +374,8 @@ jobs:
 
   plan-platform-uat:
     name: Plan - main-platform (uat)
-    needs: [ci, apply-platform-dev, apply-infra-uat]
-    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-platform-dev.result == 'success' || needs.apply-platform-dev.result == 'skipped') && (needs.apply-infra-uat.result == 'success' || needs.apply-infra-uat.result == 'skipped')
+    needs: [ci, apply-infra-uat]
+    if: always() && inputs.run_destroy != true && needs.ci.result == 'success' && (needs.apply-infra-uat.result == 'success' || needs.apply-infra-uat.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -437,8 +439,8 @@ jobs:
 
   plan-platform-prod:
     name: Plan - main-platform (prod)
-    needs: [ci, apply-platform-uat]
-    if: always() && inputs.run_destroy != true && inputs.run_platform_prod == true && needs.ci.result == 'success' && (needs.apply-platform-uat.result == 'success' || needs.apply-platform-uat.result == 'skipped')
+    needs: [ci, apply-infra-prod]
+    if: always() && inputs.run_destroy != true && inputs.run_platform_prod == true && needs.ci.result == 'success' && (needs.apply-infra-prod.result == 'success' || needs.apply-infra-prod.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
