@@ -1,6 +1,86 @@
 # EKS Infrastructure
 
-Self-managed EKS cluster with EC2 worker nodes on AWS Tokyo (`ap-northeast-1`), built with Terraform.
+Production-grade EKS platform with EC2 worker nodes on AWS Tokyo (`ap-northeast-1`), built with Terraform. Features GitOps deployment via ArgoCD, full observability stack (metrics, logs, alerts), and multi-environment support (DEV / UAT / PROD).
+
+## Architecture
+
+```mermaid
+flowchart TD
+    Dev[Developer]
+    User[User]
+
+    subgraph GitHub[GitHub]
+        Repo[Repository]
+        subgraph CI[GitHub Actions CI/CD]
+            Build[Build Docker Image]
+            Push[Push to ECR]
+            Scan[ECR Image Scan]
+        end
+        subgraph InfraPipeline[Infra Pipeline]
+            TFPlan[TF Plan]
+            TFApply[TF Apply]
+        end
+    end
+
+    subgraph AWS[AWS ap-northeast-1]
+        ECR[(ECR Private Registry)]
+        SM[Secrets Manager]
+        ALB[AWS ALB]
+        RDS[(RDS PostgreSQL)]
+        Redis[(ElastiCache Redis)]
+
+        subgraph Cluster[EKS Cluster]
+            ArgoCD[ArgoCD]
+            App[booking-app]
+            ESO[External Secrets Operator]
+            subgraph Obs[Observability]
+                Prometheus[Prometheus]
+                FluentBit[Fluent Bit]
+                AlertManager[AlertManager]
+            end
+        end
+    end
+
+    subgraph GC[Grafana Cloud]
+        Mimir[Mimir - Metrics]
+        Loki[Loki - Logs]
+    end
+
+    Dev -->|git push| Repo
+    Repo --> Build --> Push --> ECR
+    Repo --> TFPlan --> TFApply
+
+    ECR -->|image| ArgoCD
+    Repo -->|manifests| ArgoCD
+    ArgoCD -->|deploy| App
+    TFApply -.->|provisions| Cluster
+
+    User --> ALB --> App
+    App --> RDS
+    App --> Redis
+
+    SM --> ESO -->|secrets| App
+
+    Prometheus -->|remote_write| Mimir
+    FluentBit -->|push| Loki
+    AlertManager -->|notify| Slack[Slack]
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Infrastructure | Terraform, AWS EKS, VPC, RDS PostgreSQL, ElastiCache Redis |
+| Container Registry | AWS ECR (private, lifecycle policies, cross-account replication) |
+| GitOps | ArgoCD |
+| CI/CD | GitHub Actions + OIDC (no long-lived credentials) |
+| Secret Management | AWS Secrets Manager + External Secrets Operator |
+| Ingress | AWS Load Balancer Controller (ALB) |
+| Metrics | kube-prometheus-stack → Grafana Cloud (Mimir) |
+| Logs | Fluent Bit → Grafana Cloud (Loki) |
+| Alerts | AlertManager → Slack |
+| CNI | AWS VPC CNI |
+| Storage | EBS CSI Driver (gp3) |
 
 ## Structure
 
