@@ -5,6 +5,8 @@ metadata:
   namespace: booking-app
 spec:
   replicas: 1
+  strategy:
+    type: Recreate  # RWO PVC can only be mounted by one pod; Recreate kills old pod before starting new one
   selector:
     matchLabels:
       app: booking-app
