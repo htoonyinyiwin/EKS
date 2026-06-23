@@ -5,7 +5,7 @@ from pathlib import Path
 import psycopg2
 import redis
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
@@ -53,6 +53,11 @@ class BookingRequest(BaseModel):
     customer: str
     start_date: str
     end_date: str
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/ui")
 
 
 @app.get("/ui", include_in_schema=False)
