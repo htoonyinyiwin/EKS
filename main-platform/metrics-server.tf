@@ -5,8 +5,9 @@ resource "helm_release" "metrics_server" {
   namespace  = "kube-system"
   version    = "3.12.2"
 
-  set {
-    name  = "args[0]"
-    value = "--kubelet-insecure-tls" # EKS nodes use self-signed certs; metrics-server must skip TLS verify
-  }
+  values = [
+    yamlencode({
+      args = ["--kubelet-insecure-tls"] # EKS nodes use self-signed certs; metrics-server must skip TLS verify
+    })
+  ]
 }
