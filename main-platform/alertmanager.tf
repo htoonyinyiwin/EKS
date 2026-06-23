@@ -41,7 +41,7 @@ resource "kubectl_manifest" "external_secret_alertmanager_slack" {
     }
   })
 
-  depends_on = [kubectl_manifest.cluster_secret_store]
+  depends_on = [kubectl_manifest.cluster_secret_store, helm_release.prometheus]
 }
 
 resource "kubectl_manifest" "alertmanager_config_slack" {
@@ -81,7 +81,7 @@ resource "kubectl_manifest" "alertmanager_config_slack" {
     }
   })
 
-  depends_on = [kubectl_manifest.external_secret_alertmanager_slack]
+  depends_on = [kubectl_manifest.external_secret_alertmanager_slack, helm_release.prometheus]
 }
 
 resource "kubectl_manifest" "prometheus_rule_pod_alerts" {
@@ -123,4 +123,6 @@ resource "kubectl_manifest" "prometheus_rule_pod_alerts" {
       ]
     }
   })
+
+  depends_on = [helm_release.prometheus] # PrometheusRule CRD registered by kube-prometheus-stack
 }

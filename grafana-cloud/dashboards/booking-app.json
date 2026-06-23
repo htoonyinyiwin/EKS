@@ -1,0 +1,116 @@
+{
+  "title": "Booking App",
+  "uid": "booking-app-overview",
+  "tags": ["booking-app", "eks"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Pods Ready",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "grafanacloud-livelyscooter3356-prom" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "mappings": []
+        }
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_ready{deployment=\"booking-app\", namespace=\"booking-app\"}",
+          "legendFormat": "ready pods"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "HTTP Request Rate (req/s)",
+      "gridPos": { "x": 6, "y": 0, "w": 9, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "grafanacloud-livelyscooter3356-prom" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "lineWidth": 2 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{namespace=\"booking-app\"}[2m])) by (handler, method)",
+          "legendFormat": "{{method}} {{handler}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "HTTP Latency p99 (s)",
+      "gridPos": { "x": 15, "y": 0, "w": 9, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "grafanacloud-livelyscooter3356-prom" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{namespace=\"booking-app\"}[2m])) by (le, handler))",
+          "legendFormat": "p99 {{handler}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "CPU Usage (cores)",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "grafanacloud-livelyscooter3356-prom" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": { "lineWidth": 2 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"booking-app\", container=\"booking-app\"}[2m]))",
+          "legendFormat": "cpu"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Memory Usage",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "grafanacloud-livelyscooter3356-prom" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "lineWidth": 2 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"booking-app\", container=\"booking-app\"})",
+          "legendFormat": "memory"
+        }
+      ]
+    }
+  ]
+}

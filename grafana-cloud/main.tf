@@ -29,3 +29,9 @@ resource "grafana_folder" "general" {
   provider = grafana.stack
   title    = "General-EKS"
 }
+
+resource "grafana_dashboard" "booking_app" {
+  provider    = grafana.stack
+  folder      = grafana_folder.general.uid
+  config_json = file("${path.module}/dashboards/booking-app.json")
+}
