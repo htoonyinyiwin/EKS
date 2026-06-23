@@ -17,5 +17,28 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 # ArgoCD is now exposed via ALB — no port forward needed
 echo "ArgoCD URL:"
-kubectl get ingress argocd-ingress -n argocd \
-  -o jsonpath="http://{.status.loadBalancer.ingress[0].hostname}" && echo
+ARGOCD_URL=$(kubectl get ingress argocd-ingress -n argocd \
+  -o jsonpath="http://{.status.loadBalancer.ingress[0].hostname}")
+echo "$ARGOCD_URL"
+
+# Register GitHub webhook so ArgoCD syncs instantly on every push
+# ALB URL changes each cluster recreate so we re-register each morning
+# Removes stale hooks first to avoid accumulation
+echo "Registering GitHub webhook for ArgoCD..."
+REPO="htoonyinyiwin/EKS"
+WEBHOOK_URL="${ARGOCD_URL}/api/webhook"
+
+# Delete existing ArgoCD webhooks to avoid duplicates
+for id in $(gh api repos/$REPO/hooks --jq '.[] | select(.config.url | contains("argocd")) | .id'); do
+  gh api repos/$REPO/hooks/$id --method DELETE
+  echo "Removed stale webhook $id"
+done
+
+# Register fresh webhook
+gh api repos/$REPO/hooks --method POST \
+  -f "config[url]=$WEBHOOK_URL" \
+  -f "config[content_type]=json" \
+  -f "events[]=push" \
+  -f "active=true" > /dev/null
+
+echo "Webhook registered: $WEBHOOK_URL"

@@ -11,6 +11,8 @@ server:
 configs:
   params:
     server.insecure: true
+  cm:
+    timeout.reconciliation: 30s  # poll Git every 30s (default is 180s)
 
 dex:
   image:
