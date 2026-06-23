@@ -99,20 +99,20 @@ resource "kubectl_manifest" "prometheus_rule_pod_alerts" {
           name = "pod.rules"
           rules = [
             {
-              alert = "PodCrashLooping"
-              expr  = "rate(kube_pod_container_status_restarts_total[5m]) * 60 > 0"
-              for   = "5m"
-              labels      = { severity = "critical" }
+              alert  = "PodCrashLooping"
+              expr   = "rate(kube_pod_container_status_restarts_total[5m]) * 60 > 0"
+              for    = "5m"
+              labels = { severity = "critical" }
               annotations = {
                 summary     = "Pod {{ $labels.pod }} is crash looping"
                 description = "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
               }
             },
             {
-              alert = "PodNotReady"
-              expr  = "kube_pod_status_ready{condition=\"false\"} == 1"
-              for   = "5m"
-              labels      = { severity = "warning" }
+              alert  = "PodNotReady"
+              expr   = "kube_pod_status_ready{condition=\"false\"} == 1"
+              for    = "5m"
+              labels = { severity = "warning" }
               annotations = {
                 summary     = "Pod {{ $labels.pod }} is not ready"
                 description = "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready for more than 5 minutes"

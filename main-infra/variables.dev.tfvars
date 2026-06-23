@@ -13,9 +13,9 @@ public_internet_cidr_blocks = ["0.0.0.0/0"]
 # docker_hub_username         = "brianaung"
 
 # ECR
-ecr_images_to_retain                   = 10
-count_ecr_replication_configuration    = 0 # dev is not the source
-count_ecr_registry_policy              = 0 # dev is not a replication target
+ecr_images_to_retain                        = 10
+count_ecr_replication_configuration         = 0 # dev is not the source
+count_ecr_registry_policy                   = 0 # dev is not a replication target
 ecr_replication_destination_prod_account_id = ""
 ecr_replication_destination_dev_account_id  = ""
 ecr_source_account_id                       = ""
