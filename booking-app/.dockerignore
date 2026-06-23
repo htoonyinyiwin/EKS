@@ -1,0 +1,15 @@
+# In case sensitive files or noise are added to booking-app/ in the future,
+# list them here to prevent them from being copied into the Docker image.
+
+# Local environment files
+.env
+.env.*
+
+# Test files
+__pycache__/
+*.pyc
+tests/
+
+# Editor/OS noise
+.DS_Store
+*.swp

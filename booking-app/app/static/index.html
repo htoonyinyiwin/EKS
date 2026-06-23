@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Booking</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f4f6f9; color: #333; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #1a1a2e; }
+    h2 { font-size: 1rem; margin-bottom: 1rem; color: #444; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); max-width: 520px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: #555; }
+    input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; margin-bottom: 0.9rem; }
+    input:focus { outline: none; border-color: #4f8ef7; }
+    button { background: #4f8ef7; color: white; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; }
+    button:hover { background: #3a7bd5; }
+    .result { margin-top: 1rem; background: #f0f4ff; border-radius: 6px; padding: 1rem; font-size: 0.85rem; white-space: pre-wrap; font-family: monospace; display: none; }
+    .error { background: #fff0f0; color: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>Vehicle Booking</h1>
+
+  <div class="card">
+    <h2>Create Booking</h2>
+    <label>Vehicle ID</label>
+    <input id="vehicle_id" placeholder="e.g. TRUCK-001" />
+    <label>Customer</label>
+    <input id="customer" placeholder="e.g. Acme Corp" />
+    <label>Start Date</label>
+    <input id="start_date" type="date" />
+    <label>End Date</label>
+    <input id="end_date" type="date" />
+    <button onclick="createBooking()">Create</button>
+    <div class="result" id="create-result"></div>
+  </div>
+
+  <div class="card">
+    <h2>Get Booking</h2>
+    <label>Booking ID</label>
+    <input id="booking_id" placeholder="e.g. 1" type="number" />
+    <button onclick="getBooking()">Lookup</button>
+    <div class="result" id="get-result"></div>
+  </div>
+
+  <script>
+    async function createBooking() {
+      const body = {
+        vehicle_id: document.getElementById("vehicle_id").value,
+        customer:   document.getElementById("customer").value,
+        start_date: document.getElementById("start_date").value,
+        end_date:   document.getElementById("end_date").value,
+      };
+      const el = document.getElementById("create-result");
+      try {
+        const res = await fetch("/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        el.className = "result" + (res.ok ? "" : " error");
+        el.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        el.className = "result error";
+        el.textContent = e.message;
+      }
+      el.style.display = "block";
+    }
+
+    async function getBooking() {
+      const id = document.getElementById("booking_id").value;
+      const el = document.getElementById("get-result");
+      try {
+        const res = await fetch(`/bookings/${id}`);
+        const data = await res.json();
+        el.className = "result" + (res.ok ? "" : " error");
+        el.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        el.className = "result error";
+        el.textContent = e.message;
+      }
+      el.style.display = "block";
+    }
+  </script>
+</body>
+</html>

@@ -5,11 +5,15 @@ from pathlib import Path
 import psycopg2
 import redis
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
 app = FastAPI(title="Vehicle Booking API")
 Instrumentator().instrument(app).expose(app)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
@@ -49,6 +53,11 @@ class BookingRequest(BaseModel):
     customer: str
     start_date: str
     end_date: str
+
+
+@app.get("/ui", include_in_schema=False)
+def ui():
+    return FileResponse("static/index.html")
 
 
 @app.get("/health")
