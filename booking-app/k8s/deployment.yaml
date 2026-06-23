@@ -19,7 +19,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: booking-app
-          image: 051602877369.dkr.ecr.ap-northeast-1.amazonaws.com/booking-app:3542fe7d8394d14678ce4b08e34fee94d3653530
+          image: 051602877369.dkr.ecr.ap-northeast-1.amazonaws.com/booking-app:c46e7c6d19ca119b6a26f58241e47505fa6654ca
           ports:
             - containerPort: 8000
           securityContext:
