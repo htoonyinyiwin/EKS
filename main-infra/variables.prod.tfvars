@@ -19,3 +19,5 @@ count_ecr_registry_policy                   = 0 # set to 1 to allow uat to repli
 ecr_replication_destination_prod_account_id = ""
 ecr_replication_destination_dev_account_id  = ""
 ecr_source_account_id                       = "051602877369" # uat account
+
+budget_alert_email = "brianaung95@gmail.com"

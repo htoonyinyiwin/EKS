@@ -19,3 +19,5 @@ count_ecr_registry_policy                   = 0 # uat is not a replication targe
 ecr_replication_destination_prod_account_id = "<PROD_ACCOUNT_ID>"
 ecr_replication_destination_dev_account_id  = "298225145086"
 ecr_source_account_id                       = ""
+
+budget_alert_email = "brianaung95@gmail.com"

@@ -19,3 +19,5 @@ count_ecr_registry_policy                   = 0 # dev is not a replication targe
 ecr_replication_destination_prod_account_id = ""
 ecr_replication_destination_dev_account_id  = ""
 ecr_source_account_id                       = ""
+
+budget_alert_email = "brianaung95@gmail.com"

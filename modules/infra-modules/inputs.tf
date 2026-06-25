@@ -1,34 +1,40 @@
 variable "env" {
-  type = string
+  description = "Environment name."
+  type        = string
+}
+
+variable "vpc_cidr_block" {
+  description = "CIDR (Classless Inter-Domain Routing)."
+  type        = string
+}
+
+variable "azs" {
+  description = "Availability zones for subnets."
+  type        = list(string)
+}
+
+variable "private_subnets" {
+  description = "CIDR ranges for private subnets."
+  type        = list(string)
+}
+
+variable "public_subnets" {
+  description = "CIDR ranges for public subnets."
+  type        = list(string)
+}
+
+variable "private_subnet_tags" {
+  description = "Private subnet tags."
+  type        = map(any)
+}
+
+variable "public_subnet_tags" {
+  description = "Public subnet tags."
+  type        = map(any)
 }
 
 variable "project_name" {
   type = string
-}
-
-variable "azs" {
-  type    = list(string)
-  default = ["ap-northeast-1a", "ap-northeast-1c"]
-}
-
-variable "vpc_cidr_block" {
-  type = string
-}
-
-variable "private_subnets" {
-  type = list(string)
-}
-
-variable "public_subnets" {
-  type = list(string)
-}
-
-variable "private_subnet_tags" {
-  type = map(string)
-}
-
-variable "public_subnet_tags" {
-  type = map(string)
 }
 
 variable "count_eip" {
@@ -41,10 +47,7 @@ variable "public_internet_cidr_blocks" {
   type        = list(string)
 }
 
-# variable "docker_hub_username" {
-#   type = string
-# }
-
+# ECR
 variable "ecr_images_to_retain" {
   description = "Number of images to keep per ECR repository"
   type        = number
@@ -81,6 +84,7 @@ variable "ecr_source_account_id" {
   default     = ""
 }
 
+# Budget
 variable "budget_alert_email" {
   description = "Email address to receive budget alert notifications"
   type        = string

@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 locals {
   ecr_repositories = [
     aws_ecr_repository.aws_load_balancer_controller.name,
