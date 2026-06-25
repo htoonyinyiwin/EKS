@@ -69,20 +69,21 @@ resource "aws_db_instance" "primary" {
   depends_on = [aws_db_subnet_group.rds, aws_security_group.rds]
 }
 
-# read replica — commented out for study environment (adds cost)
-# resource "aws_db_instance" "read_replica" {
-#   identifier             = "${var.env}-postgresql-replica-0"
-#   storage_type           = "gp2"
-#   engine                 = "postgres"
-#   engine_version         = var.db_engine_version
-#   instance_class         = var.db_instance_class
-#   replicate_source_db    = aws_db_instance.primary.identifier
-#   publicly_accessible    = false
-#   vpc_security_group_ids = [aws_security_group.rds.id]
-#   skip_final_snapshot    = true
-#   apply_immediately      = true
-#   tags = { Name = "${var.env}-postgresql-replica-0" }
-# }
+# read replica — disabled by default (adds cost); set enable_rds_replica=true to enable
+resource "aws_db_instance" "read_replica" {
+  count                  = var.enable_rds_replica ? 1 : 0
+  identifier             = "${var.env}-postgresql-replica-0"
+  storage_type           = "gp2"
+  engine                 = "postgres"
+  engine_version         = var.db_engine_version
+  instance_class         = var.db_instance_class
+  replicate_source_db    = aws_db_instance.primary[0].identifier
+  publicly_accessible    = false
+  vpc_security_group_ids = [aws_security_group.rds[0].id]
+  skip_final_snapshot    = true
+  apply_immediately      = true
+  tags                   = { Name = "${var.env}-postgresql-replica-0" }
+}
 
 # stores RDS connection details — synced to K8s by ESO
 resource "aws_secretsmanager_secret" "rds_connection" {

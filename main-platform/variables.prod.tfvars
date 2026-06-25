@@ -19,7 +19,8 @@ admin_iam_arns = [
 db_instance_class = "db.t3.micro" # db.t3.small for real production sizing
 db_engine_version = "17"
 db_name           = "appdb"
-db_username       = "app_user"
+db_username          = "app_user"
+enable_rds_replica   = false # recommend true for production HA (adds a read replica)
 
 # ElastiCache Redis
 redis_node_type            = "cache.t3.micro" # cache.t3.small for real production sizing
@@ -28,4 +29,5 @@ redis_engine_version       = "7.0"
 redis_apply_immediately    = true
 redis_num_cache_nodes      = 1
 redis_port                 = 6379
-redis_single_node_cluster  = 1
+redis_single_node_cluster    = 1
+enable_redis_replication     = false # recommend true for production HA (adds replication group with 2 nodes)

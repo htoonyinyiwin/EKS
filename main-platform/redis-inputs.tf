@@ -32,3 +32,9 @@ variable "redis_single_node_cluster" {
   description = "Set to 1 to create a single node Redis cluster, 0 to not create it"
   type        = number
 }
+
+variable "enable_redis_replication" {
+  description = "Set to true to create a Redis replication group (adds cost, use for UAT/PROD validation)"
+  type        = bool
+  default     = false
+}

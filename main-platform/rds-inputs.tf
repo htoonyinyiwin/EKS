@@ -17,3 +17,9 @@ variable "db_username" {
   type    = string
   default = "app_user"
 }
+
+variable "enable_rds_replica" {
+  description = "Set to true to create a read replica (adds cost, use for UAT/PROD validation)"
+  type        = bool
+  default     = false
+}

@@ -59,26 +59,18 @@ resource "aws_elasticache_cluster" "redis" {
   depends_on = [aws_elasticache_subnet_group.redis, aws_security_group.redis]
 }
 
-# replication group — commented out for study environment (adds cost, needs multi-node)
-# resource "aws_elasticache_replication_group" "redis" {
-#   count                      = var.redis_replication_group
-#   replication_group_id       = "${var.project_name}-redis-replica-${var.env}"
-#   description                = "Redis replication group for ${var.project_name} ${var.env}"
-#   engine                     = var.redis_engine
-#   engine_version             = var.redis_engine_version
-#   node_type                  = var.redis_node_type
-#   port                       = var.redis_port
-#   parameter_group_name       = var.redis_parameter_group_name
-#   apply_immediately          = var.redis_apply_immediately
-#   subnet_group_name          = aws_elasticache_subnet_group.redis.name
-#   security_group_ids         = [aws_security_group.redis.id]
-#   multi_az_enabled           = var.multi_az_enabled
-#   automatic_failover_enabled = var.automatic_failover_enabled
-#   num_cache_clusters         = var.num_cache_clusters
-#   at_rest_encryption_enabled = var.redis_at_rest_encryption_enabled
-#   transit_encryption_enabled = var.redis_transit_encryption_enabled
-#   snapshot_retention_limit   = var.redis_snapshot_retention_limit
-#   snapshot_window            = var.redis_snapshot_window
-#   maintenance_window         = var.redis_maintenance_window
-#   auto_minor_version_upgrade = var.redis_auto_minor_version_upgrade
-# }
+# replication group — disabled by default (adds cost); set enable_redis_replication=true to enable
+resource "aws_elasticache_replication_group" "redis" {
+  count                      = var.enable_redis_replication ? 1 : 0
+  replication_group_id       = "${var.project_name}-redis-replica-${var.env}"
+  description                = "Redis replication group for ${var.project_name} ${var.env}"
+  engine_version             = var.redis_engine_version
+  node_type                  = var.redis_node_type
+  port                       = var.redis_port
+  parameter_group_name       = var.redis_parameter_group_name
+  apply_immediately          = var.redis_apply_immediately
+  subnet_group_name          = aws_elasticache_subnet_group.redis.name
+  security_group_ids         = [aws_security_group.redis.id]
+  automatic_failover_enabled = true
+  num_cache_clusters         = 2
+}
