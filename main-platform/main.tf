@@ -64,7 +64,7 @@ data "aws_subnets" "public" {
 }
 
 module "eks" {
-  source = "../modules/eks"
+  source = "../modules/platform-modules"
 
   env          = var.env
   project_name = var.project_name

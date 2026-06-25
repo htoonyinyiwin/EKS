@@ -77,9 +77,9 @@ resource "aws_db_instance" "read_replica" {
   engine                 = "postgres"
   engine_version         = var.db_engine_version
   instance_class         = var.db_instance_class
-  replicate_source_db    = aws_db_instance.primary[0].identifier
+  replicate_source_db    = aws_db_instance.primary.identifier
   publicly_accessible    = false
-  vpc_security_group_ids = [aws_security_group.rds[0].id]
+  vpc_security_group_ids = [aws_security_group.rds.id]
   skip_final_snapshot    = true
   apply_immediately      = true
   tags                   = { Name = "${var.env}-postgresql-replica-0" }
